@@ -15,11 +15,12 @@ namespace Zephyr.Filesystem
         public abstract String Parent { get; }
         public abstract String Root { get; }
 
-        public abstract ZephyrDirectory Create(string childDirName = null, bool failIfExists = false, String callbackLabel = null, Action<string, string> callback = null);
-        public abstract void Delete(string dirName = null, bool recurse = true, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null);
-        public abstract bool Exists(string dirName = null);
+        public abstract ZephyrDirectory Create(bool failIfExists = false, String callbackLabel = null, Action<string, string> callback = null);
+        public abstract void Delete(bool recurse = true, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null);
+        public abstract bool Exists();
 
         public abstract ZephyrFile CreateFile(string fullName, String callbackLabel = null, Action<string, string> callback = null);
+        public abstract ZephyrDirectory CreateDirectory(string fullName, String callbackLabel = null, Action<string, string> callback = null);
 
         public abstract IEnumerable<ZephyrDirectory> GetDirectories();
         public abstract IEnumerable<ZephyrFile> GetFiles();
@@ -33,8 +34,9 @@ namespace Zephyr.Filesystem
                 {
                     try
                     {
-                        String targetDirName = target.PathCombine(target.FullName, $"{childDir.Name}/");
-                        ZephyrDirectory targetChild = target.Create(targetDirName);
+                        String targetChildDirName = target.PathCombine(target.FullName, $"{childDir.Name}/");
+                        ZephyrDirectory targetChild = target.CreateDirectory(targetChildDirName);
+                        targetChild.Create();
                         if (recurse)
                             childDir.CopyTo(targetChild, recurse, overwrite, verbose, stopOnError, callbackLabel, callback);
                     }
@@ -82,7 +84,9 @@ namespace Zephyr.Filesystem
                 {
                     try
                     {
-                        ZephyrDirectory targetChild = target.Create(childDir.Name);
+                        String targetChildDirName = target.PathCombine(target.FullName, $"{childDir.Name}/");
+                        ZephyrDirectory targetChild = target.CreateDirectory(targetChildDirName);
+                        targetChild.Create();
                         childDir.MoveTo(targetChild, overwrite, stopOnError, verbose, callbackLabel, callback);
                         childDir.Delete(verbose: false);
                     }
@@ -99,7 +103,7 @@ namespace Zephyr.Filesystem
                     try
                     {
                         String targetFileName = target.PathCombine(target.FullName, file.Name);
-                        ZephyrFile targetFile = file.Create(targetFileName, overwrite);
+                        ZephyrFile targetFile = target.CreateFile(targetFileName);
                         file.MoveTo(targetFile, stopOnError, overwrite, verbose, callbackLabel, callback);
                     }
                     catch (Exception e)
@@ -127,13 +131,13 @@ namespace Zephyr.Filesystem
             return (GetDirectories().Count() == 0 && GetFiles().Count() == 0);
         }
 
-        public void Clear(string dirName = null, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
+        public void Clear(bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             foreach ( ZephyrDirectory dir in GetDirectories() )
-                dir.Delete(null, true, stopOnError, verbose, callbackLabel, callback);
+                dir.Delete(true, stopOnError, verbose, callbackLabel, callback);
 
             foreach ( ZephyrFile file in GetFiles() )
-                file.Delete(null, stopOnError, verbose, callbackLabel, callback);
+                file.Delete(stopOnError, verbose, callbackLabel, callback);
         }
 
 

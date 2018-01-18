@@ -23,24 +23,14 @@ namespace Zephyr.Filesystem
         public override String Parent { get { return dirInfo?.Parent?.FullName; } }
         public override String Root { get { return dirInfo?.Root?.FullName; } }
 
-        public override ZephyrDirectory Create(string childDirName = null, bool failIfExists = false, String callbackLabel = null, Action<string, string> callback = null)
+        public override ZephyrDirectory Create(bool failIfExists = false, String callbackLabel = null, Action<string, string> callback = null)
         {
-            if (childDirName == null || childDirName == FullName)
-            {
-                if (!Directory.Exists(FullName))
-                    Directory.CreateDirectory(FullName);
-                else if (failIfExists)
-                    throw new Exception($"Directory [{FullName}] Already Exists.");
-                callback?.Invoke( callbackLabel, $"Directory [{FullName}] Was Created." );
-                return this;
-            }
-            else
-            {
-                String childDirNameString = PathCombine( FullName, childDirName );
-                WindowsZephyrDirectory synDir = new WindowsZephyrDirectory( childDirNameString );
-                synDir.Create(null, failIfExists, callbackLabel, callback);
-                return synDir;
-            }
+            if (!Directory.Exists(FullName))
+                Directory.CreateDirectory(FullName);
+            else if (failIfExists)
+                throw new Exception($"Directory [{FullName}] Already Exists.");
+            callback?.Invoke(callbackLabel, $"Directory [{FullName}] Was Created.");
+            return this;
         }
 
         public override ZephyrFile CreateFile(string fullName, String callbackLabel = null, Action<string, string> callback = null)
@@ -48,51 +38,45 @@ namespace Zephyr.Filesystem
             return new WindowsZephyrFile(fullName);
         }
 
-        public override void Delete(string dirName = null, bool recurse = true, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
+        public override ZephyrDirectory CreateDirectory(string fullName, String callbackLabel = null, Action<string, string> callback = null)
         {
-            if ( dirName == null || dirName == FullName)
-            {
-                try
-                {
-                    DirectoryInfo dirInfo = new DirectoryInfo(FullName);
-
-                    if (dirInfo.Exists)
-                    {
-                        if (!recurse)
-                        {
-                            int dirs = dirInfo.GetDirectories().Length;
-                            int files = dirInfo.GetFiles().Length;
-                            if (dirs > 0 || files > 0)
-                                throw new Exception($"Directory [{FullName}] is not empty.");
-                        }
-                        dirInfo.Delete(recurse);
-                    }
-
-                    if (verbose)
-                        Logger.Log($"Directory [{FullName}] Was Deleted.", callbackLabel, callback);
-                }
-                catch (Exception e)
-                {
-                    Logger.Log(e.Message, callbackLabel, callback);
-                    if (stopOnError)
-                        throw;
-                }
-            }
-            else
-            {
-                WindowsZephyrDirectory dir = new WindowsZephyrDirectory(dirName);
-                dir.Delete(null, recurse, stopOnError, verbose, callbackLabel, callback);
-            }
-
-            dirInfo = null;
+            return new WindowsZephyrDirectory(fullName);
         }
 
-        public override bool Exists(string dirName = null)
+        public override void Delete(bool recurse = true, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
-            if ( dirName == null )
-                return Directory.Exists( FullName );
-            else
-                return Directory.Exists( dirName );
+            try
+            {
+                DirectoryInfo dirInfo = new DirectoryInfo(FullName);
+
+                if (dirInfo.Exists)
+                {
+                    if (!recurse)
+                    {
+                        int dirs = dirInfo.GetDirectories().Length;
+                        int files = dirInfo.GetFiles().Length;
+                        if (dirs > 0 || files > 0)
+                            throw new Exception($"Directory [{FullName}] is not empty.");
+                    }
+                    dirInfo.Delete(recurse);
+                }
+
+                if (verbose)
+                    Logger.Log($"Directory [{FullName}] Was Deleted.", callbackLabel, callback);
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.Message, callbackLabel, callback);
+                if (stopOnError)
+                    throw;
+            }
+
+            dirInfo = null;     // TODO : Why did I do this?
+        }
+
+        public override bool Exists()
+        {
+            return Directory.Exists(FullName);
         }
 
         public override IEnumerable<ZephyrDirectory> GetDirectories()

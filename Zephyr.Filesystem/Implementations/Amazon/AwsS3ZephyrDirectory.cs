@@ -77,30 +77,21 @@ namespace Zephyr.Filesystem
 
 
 
-        public override ZephyrDirectory Create(string childDirName = null, bool failIfExists = false, string callbackLabel = null, Action<string, string> callback = null)
+        public override ZephyrDirectory Create(bool failIfExists = false, string callbackLabel = null, Action<string, string> callback = null)
         {
-            if ( childDirName == null || childDirName == FullName )
-            {
-                if (_client == null)
-                    throw new Exception($"AWSClient Not Set.");
+            if (_client == null)
+                throw new Exception($"AWSClient Not Set.");
 
-                if (this.Exists() && failIfExists)
-                    throw new Exception($"Directory [{FullName}] Already Exists.");
+            if (this.Exists() && failIfExists)
+                throw new Exception($"Directory [{FullName}] Already Exists.");
 
-                String key = ObjectKey;
-                if ( key.EndsWith( "/" ) )
-                    key = key.Substring( 0, key.Length - 1 );
-                S3DirectoryInfo dirInfo = new S3DirectoryInfo( _client.Client, BucketName, key);
-                dirInfo.Create();
-                callback?.Invoke( callbackLabel, $"Directory [{FullName}] Was Created." );
-                return this;
-            }
-            else
-            {
-                AwsS3ZephyrDirectory newDir = new AwsS3ZephyrDirectory( _client, childDirName );
-                newDir.Create(null, failIfExists, callbackLabel, callback);
-                return newDir;
-            }
+            String key = ObjectKey;
+            if (key.EndsWith("/"))
+                key = key.Substring(0, key.Length - 1);
+            S3DirectoryInfo dirInfo = new S3DirectoryInfo(_client.Client, BucketName, key);
+            dirInfo.Create();
+            callback?.Invoke(callbackLabel, $"Directory [{FullName}] Was Created.");
+            return this;
         }
 
         public override ZephyrFile CreateFile(string fullName, String callbackLabel = null, Action<string, string> callback = null)
@@ -108,67 +99,56 @@ namespace Zephyr.Filesystem
             return new AwsS3ZephyrFile(_client, fullName);
         }
 
-        public override void Delete(string dirName = null, bool recurse = true, bool stopOnError = true, bool verbose = true, string callbackLabel = null, Action<string, string> callback = null)
+        public override ZephyrDirectory CreateDirectory(string fullName, String callbackLabel = null, Action<string, string> callback = null)
         {
-            if (dirName == null || dirName == FullName)
-            {
-                try
-                {
-                    if (_client == null)
-                        throw new Exception($"AWSClient Not Set.");
-
-                    String key = ObjectKey;
-                    key = key.Replace('/', '\\');
-                    if (key.EndsWith("\\"))
-                        key = key.Substring(0, key.Length - 1);
-                    S3DirectoryInfo dirInfo = new S3DirectoryInfo(_client.Client, BucketName, key);
-
-                    if (dirInfo.Exists)
-                    {
-                        if (!recurse)
-                        {
-                            int dirs = dirInfo.GetDirectories().Length;
-                            int files = dirInfo.GetFiles().Length;
-                            if (dirs > 0 || files > 0)
-                                throw new Exception($"Directory [{FullName}] is not empty.");
-                        }
-
-                        dirInfo.Delete(recurse);
-                    }
-
-                    if (verbose)
-                        Logger.Log($"Directory [{FullName}] Was Deleted.", callbackLabel, callback);
-                }
-                catch (Exception e)
-                {
-                    Logger.Log(e.Message, callbackLabel, callback);
-                    if (stopOnError)
-                        throw;
-                }
-            }
-            else
-            {
-                AwsS3ZephyrDirectory newDir = new AwsS3ZephyrDirectory( _client, dirName );
-                newDir.Delete(recurse: recurse);
-            }
+            return new AwsS3ZephyrDirectory(_client, fullName);
         }
 
-        public override bool Exists(string dirName = null)
+        public override void Delete(bool recurse = true, bool stopOnError = true, bool verbose = true, string callbackLabel = null, Action<string, string> callback = null)
         {
-            if ( dirName == null || dirName == FullName )
+            try
             {
                 if (_client == null)
                     throw new Exception($"AWSClient Not Set.");
 
-                string dirInfoKey = ObjectKey.Replace('/', '\\');
-                S3DirectoryInfo dirInfo = new S3DirectoryInfo( _client.Client, BucketName, dirInfoKey);
-                return dirInfo.Exists;
+                String key = ObjectKey;
+                key = key.Replace('/', '\\');
+                if (key.EndsWith("\\"))
+                    key = key.Substring(0, key.Length - 1);
+                S3DirectoryInfo dirInfo = new S3DirectoryInfo(_client.Client, BucketName, key);
+
+                if (dirInfo.Exists)
+                {
+                    if (!recurse)
+                    {
+                        int dirs = dirInfo.GetDirectories().Length;
+                        int files = dirInfo.GetFiles().Length;
+                        if (dirs > 0 || files > 0)
+                            throw new Exception($"Directory [{FullName}] is not empty.");
+                    }
+
+                    dirInfo.Delete(recurse);
+                }
+
+                if (verbose)
+                    Logger.Log($"Directory [{FullName}] Was Deleted.", callbackLabel, callback);
             }
-            else
+            catch (Exception e)
             {
-                AwsS3ZephyrDirectory newDir = new AwsS3ZephyrDirectory( _client, dirName );
-                return newDir.Exists();
+                Logger.Log(e.Message, callbackLabel, callback);
+                if (stopOnError)
+                    throw;
             }
+        }
+
+        public override bool Exists()
+        {
+            if (_client == null)
+                throw new Exception($"AWSClient Not Set.");
+
+            string dirInfoKey = ObjectKey.Replace('/', '\\');
+            S3DirectoryInfo dirInfo = new S3DirectoryInfo(_client.Client, BucketName, dirInfoKey);
+            return dirInfo.Exists;
         }
 
         public override IEnumerable<ZephyrDirectory> GetDirectories()

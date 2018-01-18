@@ -76,35 +76,25 @@ namespace Zephyr.Filesystem
             this.Stream = null;
         }
 
-        public override ZephyrFile Create(string fileName = null, bool overwrite = true, string callbackLabel = null, Action<string, string> callback = null)
+        public override ZephyrFile Create(bool overwrite = true, string callbackLabel = null, Action<string, string> callback = null)
         {
-            if ( fileName == null || fileName == FullName )
+            try
             {
-                try
-                {
-                    if (this.Exists() && !overwrite)
-                        throw new Exception($"File [{this.FullName}] Already Exists.");
+                if (this.Exists() && !overwrite)
+                    throw new Exception($"File [{this.FullName}] Already Exists.");
 
-                    if (_client == null)
-                        throw new Exception($"AWSClient Not Set.");
+                if (_client == null)
+                    throw new Exception($"AWSClient Not Set.");
 
-                    S3FileInfo fileInfo = new S3FileInfo(_client.Client, BucketName, ObjectKey);
-                    this.Stream = fileInfo.Create();
-                    callback?.Invoke(callbackLabel, $"File [{FullName}] Was Created.");
-                    return this;
-                }
-                catch (Exception e)
-                {
-                    Logger.Log($"ERROR - {e.Message}", callbackLabel, callback);
-                    throw;
-
-                }
+                S3FileInfo fileInfo = new S3FileInfo(_client.Client, BucketName, ObjectKey);
+                this.Stream = fileInfo.Create();
+                callback?.Invoke(callbackLabel, $"File [{FullName}] Was Created.");
+                return this;
             }
-            else
+            catch (Exception e)
             {
-                AwsS3ZephyrFile file = new AwsS3ZephyrFile( _client, fileName );
-                file.Create( null, overwrite );
-                return file;
+                Logger.Log($"ERROR - {e.Message}", callbackLabel, callback);
+                throw;
             }
         }
 
@@ -113,54 +103,38 @@ namespace Zephyr.Filesystem
             return new AwsS3ZephyrDirectory(_client, dirName);
         }
 
-        public override void Delete(string fileName = null, bool stopOnError = true, bool verbose = true, string callbackLabel = null, Action<string, string> callback = null)
+        public override void Delete(bool stopOnError = true, bool verbose = true, string callbackLabel = null, Action<string, string> callback = null)
         {
-            if ( fileName == null || fileName == FullName )
-            {
-                try
-                {
-                    if (_client == null)
-                        throw new Exception($"AWSClient Not Set.");
-
-                    S3FileInfo fileInfo = new S3FileInfo(_client.Client, BucketName, ObjectKey);
-
-                    if (fileInfo.Exists)
-                        fileInfo.Delete();
-
-                    if (verbose)
-                        Logger.Log($"File [{FullName}] Was Deleted.", callbackLabel, callback);
-                }
-                catch (Exception e)
-                {
-                    Logger.Log(e.Message, callbackLabel, callback);
-                    if (stopOnError)
-                        throw;
-                }
-            }
-            else
-            {
-                AwsS3ZephyrFile file = new AwsS3ZephyrFile(_client,  fileName );
-                file.Delete(stopOnError: stopOnError, verbose: verbose);
-            }
-        }
-
-        public override bool Exists(string fileName = null)
-        {
-            if (fileName == null || fileName == FullName)
+            try
             {
                 if (_client == null)
                     throw new Exception($"AWSClient Not Set.");
 
-                String key = ObjectKey;
-                key = key.Replace('/', '\\');
-                S3FileInfo fileInfo = new S3FileInfo( _client.Client, BucketName, key );
-                return fileInfo.Exists;
+                S3FileInfo fileInfo = new S3FileInfo(_client.Client, BucketName, ObjectKey);
+
+                if (fileInfo.Exists)
+                    fileInfo.Delete();
+
+                if (verbose)
+                    Logger.Log($"File [{FullName}] Was Deleted.", callbackLabel, callback);
             }
-            else
+            catch (Exception e)
             {
-                AwsS3ZephyrFile file = new AwsS3ZephyrFile( _client, fileName );
-                return file.Exists();
+                Logger.Log(e.Message, callbackLabel, callback);
+                if (stopOnError)
+                    throw;
             }
+        }
+
+        public override bool Exists()
+        {
+            if (_client == null)
+                throw new Exception($"AWSClient Not Set.");
+
+            String key = ObjectKey;
+            key = key.Replace('/', '\\');
+            S3FileInfo fileInfo = new S3FileInfo(_client.Client, BucketName, key);
+            return fileInfo.Exists;
         }
 
     }

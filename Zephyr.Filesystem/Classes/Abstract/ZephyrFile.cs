@@ -23,9 +23,9 @@ namespace Zephyr.Filesystem
             FullName = fullName;
         }
 
-        public abstract ZephyrFile Create(string fileName = null, bool overwrite = true, String callbackLabel = null, Action<string, string> callback = null);
-        public abstract void Delete(string fileName = null, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null);
-        public abstract bool Exists(string fileName = null);
+        public abstract ZephyrFile Create(bool overwrite = true, String callbackLabel = null, Action<string, string> callback = null);
+        public abstract void Delete(bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null);
+        public abstract bool Exists();
 
         public abstract ZephyrDirectory CreateDirectory(string dirName, String callbackLabel = null, Action<string, string> callback = null);
 

@@ -49,30 +49,21 @@ namespace Zephyr.Filesystem
 
         }
 
-        public override ZephyrFile Create(string fileName = null, bool overwrite = true, String callbackLabel = null, Action<string, string> callback = null)
+        public override ZephyrFile Create(bool overwrite = true, String callbackLabel = null, Action<string, string> callback = null)
         {
-            if ( fileName == null || fileName == FullName)
+            try
             {
-                try
-                {
-                    if (this.Exists() && !overwrite)
-                        throw new Exception($"File [{this.FullName}] Already Exists.");
+                if (this.Exists() && !overwrite)
+                    throw new Exception($"File [{this.FullName}] Already Exists.");
 
-                    this.Stream = File.Open(FullName, System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.Write);
-                    callback?.Invoke(callbackLabel, $"File [{FullName}] Was Created.");
-                    return this;
-                }
-                catch (Exception e)
-                {
-                    Logger.Log($"ERROR - {e.Message}", callbackLabel, callback);
-                    throw;
-                }
+                this.Stream = File.Open(FullName, System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.Write);
+                callback?.Invoke(callbackLabel, $"File [{FullName}] Was Created.");
+                return this;
             }
-            else
+            catch (Exception e)
             {
-                WindowsZephyrFile synFile = new WindowsZephyrFile( fileName );
-                synFile.Create( null, overwrite, callbackLabel, callback );
-                return synFile;
+                Logger.Log($"ERROR - {e.Message}", callbackLabel, callback);
+                throw;
             }
         }
 
@@ -81,40 +72,28 @@ namespace Zephyr.Filesystem
             return new WindowsZephyrDirectory(dirName);
         }
 
-        public override void Delete(string fileName = null, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
+        public override void Delete(bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
-            if ( fileName == null || fileName == FullName )
+            try
             {
-                try
-                {
-                    FileInfo fileInfo = new FileInfo(FullName);
-                    if (fileInfo.Exists)
-                        fileInfo.Delete();
+                FileInfo fileInfo = new FileInfo(FullName);
+                if (fileInfo.Exists)
+                    fileInfo.Delete();
 
-                    if (verbose)
-                        Logger.Log($"File [{FullName}] Was Deleted.", callbackLabel, callback);
-                }
-                catch (Exception e)
-                {
-                    Logger.Log(e.Message, callbackLabel, callback);
-                    if (stopOnError)
-                        throw;
-                }
-            }
-            else
-            {
-                File.Delete( fileName );
                 if (verbose)
-                    Logger.Log($"File [{fileName}] Was Deleted.", callbackLabel, callback);
+                    Logger.Log($"File [{FullName}] Was Deleted.", callbackLabel, callback);
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.Message, callbackLabel, callback);
+                if (stopOnError)
+                    throw;
             }
         }
 
-        public override bool Exists(string fileName = null)
+        public override bool Exists()
         {
-            if ( fileName == null )
-                return File.Exists( FullName );
-            else
-                return File.Exists( fileName );
+            return File.Exists(FullName);
         }
 
     }
