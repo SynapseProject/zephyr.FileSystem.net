@@ -19,8 +19,6 @@ namespace Zephyr.Filesystem
          
         public static string UrlPattern = @"^(s3:\/\/)(.*?)\/(.*)$";        // Gets Root, Bucket Name and Object Key
 
-        private System.IO.Stream fileStream;
-        private bool isStreamOpen = false;
         private AwsClient _client = null;
 
         public override string Name { get { return FullName.Substring( FullName.LastIndexOf( @"/" ) + 1 ); } }
@@ -53,30 +51,29 @@ namespace Zephyr.Filesystem
 
         public override System.IO.Stream OpenStream(AccessType access, string callbackLabel = null, Action<string, string> callback = null)
         {
-            if ( !isStreamOpen )
+            if ( !IsOpen )
             {
                 if (_client == null)
                     throw new Exception($"AWSClient Not Set.");
 
                 S3FileInfo file = new S3FileInfo( _client.Client, BucketName, ObjectKey );
                 if ( access == AccessType.Read )
-                    fileStream = file.OpenRead();
+                    this.Stream = file.OpenRead();
                 else if ( access == AccessType.Write )
-                    fileStream = file.OpenWrite();
+                    this.Stream = file.OpenWrite();
                 else
                     throw new Exception( $"Unknown AccessType [{access}] Received." );
-                isStreamOpen = true;
             }
-            return fileStream;
+            return this.Stream;
         }
 
         public override void CloseStream(string callbackLabel = null, Action<string, string> callback = null)
         {
-            if ( isStreamOpen )
+            if (IsOpen)
             {
-                fileStream.Close();
-                isStreamOpen = false;
+                this.Stream.Close();
             }
+            this.Stream = null;
         }
 
         public override ZephyrFile Create(string fileName = null, bool overwrite = true, string callbackLabel = null, Action<string, string> callback = null)
@@ -92,8 +89,7 @@ namespace Zephyr.Filesystem
                         throw new Exception($"AWSClient Not Set.");
 
                     S3FileInfo fileInfo = new S3FileInfo(_client.Client, BucketName, ObjectKey);
-                    fileStream = fileInfo.Create();
-                    isStreamOpen = true;            // Opens Stream As "Write" By Default
+                    this.Stream = fileInfo.Create();
                     callback?.Invoke(callbackLabel, $"File [{FullName}] Was Created.");
                     return this;
                 }

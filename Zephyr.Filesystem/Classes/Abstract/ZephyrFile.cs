@@ -11,6 +11,10 @@ namespace Zephyr.Filesystem
     {
         public abstract String Name { get; }
         public abstract String FullName { get; set; }
+        public System.IO.Stream Stream { get; internal set; }
+        public bool IsOpen { get { return this.Stream == null ? false : (this.Stream.CanRead || this.Stream.CanWrite); } }
+        public bool CanRead { get { return this.Stream == null ? false : this.Stream.CanRead; } }
+        public bool CanWrite { get { return this.Stream == null ? false : this.Stream.CanWrite; } }
 
         public ZephyrFile() { }
 
@@ -89,6 +93,111 @@ namespace Zephyr.Filesystem
             this.Delete(stopOnError: stopOnError, verbose: false);
             if (verbose)
                 Logger.Log($"Moved File [{this.FullName}] to [{dir.FullName}].", callbackLabel, callback);
+        }
+
+        public Stream ResetStream(AccessType access, String callbackLabel = null, Action<string, string> callback = null)
+        {
+            if (IsOpen)
+                CloseStream(callbackLabel, callback);
+
+            return OpenStream(access, callbackLabel, callback);
+        }
+
+        public string[] ReadAllLines(String callbackLabel = null, Action<string, string> callback = null)
+        {
+            List<string> lines = new List<string>();
+
+            ResetStream(AccessType.Read, callbackLabel, callback);
+
+            using (StreamReader reader = new StreamReader(this.Stream))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                    lines.Add(line);
+            }
+
+            CloseStream(callbackLabel, callback);
+
+            return lines.ToArray();
+        }
+
+        public string ReadAllText(String callbackLabel = null, Action<string, string> callback = null)
+        {
+            string text = null;
+            ResetStream(AccessType.Read, callbackLabel, callback);
+            StreamReader reader = new StreamReader(this.Stream);
+            text = reader.ReadToEnd();
+
+            CloseStream(callbackLabel, callback);
+            return text;
+        }
+
+        public byte[] ReadAllBytes(String callbackLabel = null, Action<string, string> callback = null)
+        {
+            ResetStream(AccessType.Read, callbackLabel, callback);
+
+            // Logic From : https://stackoverflow.com/questions/1080442/how-to-convert-an-stream-into-a-byte-in-c
+            byte[] readBuffer = new byte[4096];
+            int totalBytesRead = 0;
+            int bytesRead;
+
+            while ((bytesRead = this.Stream.Read(readBuffer, totalBytesRead, readBuffer.Length - totalBytesRead)) > 0)
+            {
+                totalBytesRead += bytesRead;
+                if (totalBytesRead == readBuffer.Length)
+                {
+                    int nextByte = Stream.ReadByte();
+                    if (nextByte != -1)
+                    {
+                        byte[] temp = new byte[readBuffer.Length * 2];
+                        Buffer.BlockCopy(readBuffer, 0, temp, 0, readBuffer.Length);
+                        Buffer.SetByte(temp, totalBytesRead, (byte)nextByte);
+                        readBuffer = temp;
+                        totalBytesRead++;
+                    }
+                }
+            }
+
+            byte[] buffer = readBuffer;
+            if (readBuffer.Length != totalBytesRead)
+            {
+                buffer = new byte[totalBytesRead];
+                Buffer.BlockCopy(readBuffer, 0, buffer, 0, totalBytesRead);
+            }
+
+            return buffer;
+        }
+
+        public void WriteAllLines(string[] lines, String callbackLabel = null, Action<string, string> callback = null)
+        {
+            ResetStream(AccessType.Write, callbackLabel, callback);
+
+            StreamWriter writer = new StreamWriter(this.Stream);
+            foreach (string line in lines)
+                writer.WriteLine(line);
+
+            writer.Flush();
+            writer.Close();
+            CloseStream(callbackLabel, callback);
+        }
+
+        public void WriteAllText(string text, String callbackLabel = null, Action<string, string> callback = null)
+        {
+            ResetStream(AccessType.Write, callbackLabel, callback);
+
+            StreamWriter writer = new StreamWriter(this.Stream);
+            writer.Write(text);
+            writer.Flush();
+            writer.Close();
+            CloseStream(callbackLabel, callback);
+        }
+
+        public void WriteAllBytes(byte[] bytes, String callbackLabel = null, Action<string, string> callback = null)
+        {
+            ResetStream(AccessType.Write, callbackLabel, callback);
+            this.Stream.Write(bytes, 0, bytes.Length);
+            this.Stream.Flush();
+            CloseStream(callbackLabel, callback);
         }
     }
 }

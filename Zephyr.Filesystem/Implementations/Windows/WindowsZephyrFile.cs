@@ -10,9 +10,6 @@ namespace Zephyr.Filesystem
 {
     public class WindowsZephyrFile : ZephyrFile
     {
-        private System.IO.FileStream fileStream;
-        private bool isStreamOpen = false;
-
         public override string Name
         {
             get
@@ -28,27 +25,27 @@ namespace Zephyr.Filesystem
 
         public override System.IO.Stream OpenStream(AccessType access, String callbackLabel = null, Action<string, string> callback = null)
         {
-            if ( !isStreamOpen )
+            if ( !IsOpen)
             {
-                fileStream = File.Open( FullName, System.IO.FileMode.OpenOrCreate, access == AccessType.Read ? System.IO.FileAccess.Read : System.IO.FileAccess.Write );
-                isStreamOpen = true;
+                this.Stream = File.Open( FullName, System.IO.FileMode.OpenOrCreate, access == AccessType.Read ? System.IO.FileAccess.Read : System.IO.FileAccess.Write );
                 callback?.Invoke( callbackLabel, $"File Stream [{FullName}] Has Been Opened." );
             }
             else
                 callback?.Invoke( callbackLabel, $"File Stream [{FullName}] Is Already Open." );
-            return fileStream;
+            return this.Stream;
         }
 
         public override void CloseStream(String callbackLabel = null, Action<string, string> callback = null)
         {
-            if ( isStreamOpen )
+            if (IsOpen)
             {
-                fileStream.Close();
-                isStreamOpen = false;
+                this.Stream.Close();
                 callback?.Invoke( callbackLabel, $"File Stream [{FullName}] Has Been Closed." );
             }
             else
                 callback?.Invoke( callbackLabel, $"File Stream [{FullName}] Is Already Closed." );
+
+            this.Stream = null;
 
         }
 
@@ -61,8 +58,7 @@ namespace Zephyr.Filesystem
                     if (this.Exists() && !overwrite)
                         throw new Exception($"File [{this.FullName}] Already Exists.");
 
-                    fileStream = File.Open(FullName, System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.Write);
-                    isStreamOpen = true;    // Opens Stream as Write By Default
+                    this.Stream = File.Open(FullName, System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.Write);
                     callback?.Invoke(callbackLabel, $"File [{FullName}] Was Created.");
                     return this;
                 }
