@@ -13,8 +13,9 @@ namespace Zephyr.Filesystem
     {
         public static void Main(string[] args)
         {
-            AwsClient awsClient = new AwsClient(RegionEndpoint.EUWest1);
-            AwsS3ZephyrDirectory dir = new AwsS3ZephyrDirectory(awsClient, @"s3://mybucket/");
+            Clients clients = new Clients();
+            clients.aws = new AwsClient(RegionEndpoint.EUWest1);
+            AwsS3ZephyrDirectory dir = new AwsS3ZephyrDirectory(clients.aws, @"s3://mybucket/");
 
             foreach (ZephyrDirectory d in dir.GetDirectories())
                 Console.WriteLine(d.FullName);

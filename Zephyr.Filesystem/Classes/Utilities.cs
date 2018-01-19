@@ -42,6 +42,13 @@ namespace Zephyr.Filesystem
             return type;
         }
 
+        /// <summary>
+        /// In Windows, it is impossible to determine by name along if a URL is a directory or a file with no extension.  Thus
+        /// the decision was made that all directory url's MUST end with a forward or backward slash (/ or \).  This removes any
+        /// ambiguity.   This standard should be carried forward to all other implementation types (Aws, Azure, FTP, etc...)
+        /// </summary>
+        /// <param name="url">The full path to the object.</param>
+        /// <returns></returns>
         public static bool IsDirectory(string url)
         {
             bool rc = false;
@@ -50,6 +57,13 @@ namespace Zephyr.Filesystem
             return rc;
         }
 
+        /// <summary>
+        /// In Windows, it is impossible to determine by name along if a URL is a directory or a file with no extension.  Thus
+        /// the decision was made that all directory url's MUST end with a forward or backward slash (/ or \).  This removes any
+        /// ambiguity.   This standard should be carried forward to all other implementation types (Aws, Azure, FTP, etc...)
+        /// </summary>
+        /// <param name="url">The full path to the object.</param>
+        /// <returns></returns>
         public static bool IsFile(string url)
         {
             return !IsDirectory(url);
@@ -96,5 +110,48 @@ namespace Zephyr.Filesystem
 
             return dir;
         }
+
+        public static ZephyrFile CreateFile(string fileName, Clients clients = null, bool overwrite = true, String callbackLabel = null, Action<string, string> callback = null)
+        {
+            ZephyrFile file = Utilities.GetZephyrFile(fileName, clients);
+            return file.Create(overwrite, callbackLabel, callback);
+        }
+
+        public static ZephyrDirectory CreateDirectory(string dirName, Clients clients = null, bool failIfExists = false, String callbackLabel = null, Action<string, string> callback = null)
+        {
+            ZephyrDirectory dir = Utilities.GetZephyrDirectory(dirName, clients);
+            return dir.Create(failIfExists, callbackLabel, callback);
+        }
+
+        public static void Delete(string name, Clients clients = null, bool recurse = true, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
+        {
+            if (Utilities.IsDirectory(name))
+            {
+                ZephyrDirectory dir = Utilities.GetZephyrDirectory(name, clients);
+                dir.Delete(recurse, stopOnError, verbose, callbackLabel, callback);
+            }
+            else
+            {
+                ZephyrFile file = Utilities.GetZephyrFile(name, clients);
+                file.Delete(stopOnError, verbose, callbackLabel, callback);
+            }
+        }
+
+        public static bool Exists(string name, Clients clients = null)
+        {
+            if (Utilities.IsDirectory(name))
+            {
+                ZephyrDirectory dir = Utilities.GetZephyrDirectory(name, clients);
+                return dir.Exists();
+            }
+            else
+            {
+                ZephyrFile file = Utilities.GetZephyrFile(name, clients);
+                return file.Exists();
+            }
+
+        }
+
+
     }
 }
