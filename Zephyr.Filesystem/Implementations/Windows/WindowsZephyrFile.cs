@@ -8,8 +8,14 @@ using Alphaleonis.Win32.Filesystem;
 
 namespace Zephyr.Filesystem
 {
+    /// <summary>
+    /// The implementation of ZephyrFile using Windows-based FileSystem.
+    /// </summary>
     public class WindowsZephyrFile : ZephyrFile
     {
+        /// <summary>
+        /// The name of the file in Windows.
+        /// </summary>
         public override string Name
         {
             get
@@ -18,12 +24,30 @@ namespace Zephyr.Filesystem
             }
         }
 
+        /// <summary>
+        /// The Fullname or URL of the file in Windows.
+        /// </summary>
         public override string FullName { get; set; }
 
+        /// <summary>
+        /// Creates an empty WindowsZephyrFile object.
+        /// </summary>
         public WindowsZephyrFile() : base() { }
+
+        /// <summary>
+        /// Creates an instance of WindowsZephyrFile representing the Fullname / URL passed in.
+        /// </summary>
+        /// <param name="fullName">The Fullname or URL of the file.</param>
         public WindowsZephyrFile(string fullName) : base( fullName ) { }
 
-        public override System.IO.Stream OpenStream(AccessType access, String callbackLabel = null, Action<string, string> callback = null)
+        /// <summary>
+        /// Implementation of the ZephyrFile Open method in Windows.
+        /// </summary>
+        /// <param name="access">Specifies to open Stream with "Read" or "Write" access.</param>
+        /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
+        /// <param name="callback">Optional method that is called for logging purposes.</param>
+        /// <returns>The open Stream for the WindowsZephyrFile.</returns>
+        public override System.IO.Stream Open(AccessType access, String callbackLabel = null, Action<string, string> callback = null)
         {
             if ( !IsOpen)
             {
@@ -35,7 +59,12 @@ namespace Zephyr.Filesystem
             return this.Stream;
         }
 
-        public override void CloseStream(String callbackLabel = null, Action<string, string> callback = null)
+        /// <summary>
+        /// Implementation of the ZephyrFile Close method in Windows.
+        /// </summary>
+        /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
+        /// <param name="callback">Optional method that is called for logging purposes.</param>
+        public override void Close(String callbackLabel = null, Action<string, string> callback = null)
         {
             if (IsOpen)
             {
@@ -49,6 +78,13 @@ namespace Zephyr.Filesystem
 
         }
 
+        /// <summary>
+        /// Implementation of the ZephyrFile Create method in Windows.
+        /// </summary>
+        /// <param name="overwrite">Will overwrite the file if it already exists.</param>
+        /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
+        /// <param name="callback">Optional method that is called for logging purposes.</param>
+        /// <returns>An instance of a WindowsZephyrFile.</returns>
         public override ZephyrFile Create(bool overwrite = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             try
@@ -67,11 +103,37 @@ namespace Zephyr.Filesystem
             }
         }
 
+        /// <summary>
+        /// Implementation of the ZephyrFile CreateFile method in Windows.
+        /// </summary>
+        /// <param name="fullName">Full name or URL of the file to be created.</param>
+        /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
+        /// <param name="callback">Optional method that is called for logging purposes.</param>
+        /// <returns>A WindowsZephyrFile implementation.</returns>
+        public override ZephyrFile CreateFile(string fileName, String callbackLabel = null, Action<string, string> callback = null)
+        {
+            return new WindowsZephyrFile(fileName);
+        }
+
+        /// <summary>
+        /// Implementation of the ZephyrDirectory CreateDirectory method in Windows.
+        /// </summary>
+        /// <param name="dirName">Full name or URL of the directory to be created.</param>
+        /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
+        /// <param name="callback">Optional method that is called for logging purposes.</param>
+        /// <returns>A WindowsZephyrDirectory implementation.</returns>
         public override ZephyrDirectory CreateDirectory(string dirName, String callbackLabel = null, Action<string, string> callback = null)
         {
             return new WindowsZephyrDirectory(dirName);
         }
 
+        /// <summary>
+        /// Implementation of the ZephyrDirectory Delete method in Windows.
+        /// </summary>
+        /// <param name="stopOnError">Throw an exception when an error occurs.</param>
+        /// <param name="verbose">Log details of file deleted.</param>
+        /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
+        /// <param name="callback">Optional method that is called for logging purposes.</param>
         public override void Delete(bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             try
@@ -91,6 +153,10 @@ namespace Zephyr.Filesystem
             }
         }
 
+        /// <summary>
+        /// Implementation of the ZephyrDirectory Exists method in Windows.
+        /// </summary>
+        /// <returns>Whether or not the file already exists.</returns>
         public override bool Exists()
         {
             return File.Exists(FullName);

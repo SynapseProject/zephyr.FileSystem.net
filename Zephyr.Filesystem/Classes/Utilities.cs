@@ -8,8 +8,22 @@ using Alphaleonis.Win32.Filesystem;
 
 namespace Zephyr.Filesystem
 {
+    /// <summary>
+    /// A class of static, helper methods around working with ZephyrFiles and ZephyrDirectories.
+    /// </summary>
     public static class Utilities
     {
+        /// <summary>
+        /// Determines the type of URL that was passed in.
+        /// Basic Rules :
+        /// - All directories must end with a slash (/ or \)
+        /// - Implementation type is determined by the Url "root".
+        ///   s3://     = Amazon S3 Storage
+        ///   \\        = Network Url
+        ///   default   = Local
+        /// </summary>
+        /// <param name="url">The FullName or URL.</param>
+        /// <returns></returns>
         public static UrlType GetUrlType(string url)
         {
             UrlType type = UrlType.Unknown;
@@ -69,6 +83,12 @@ namespace Zephyr.Filesystem
             return !IsDirectory(url);
         }
 
+        /// <summary>
+        /// Gets a ZephyrFile implementation matching the URL type passed in.
+        /// </summary>
+        /// <param name="url">The Fullname or URL of the file.</param>
+        /// <param name="clients">A collection of connection clients.</param>
+        /// <returns>A ZephyrFile implementation.</returns>
         public static ZephyrFile GetZephyrFile(string url, Clients clients = null)
         {
             ZephyrFile file = null;
@@ -89,6 +109,12 @@ namespace Zephyr.Filesystem
             return file;
         }
 
+        /// <summary>
+        /// Gets a ZephyrFile implementation matching the URL type passed in.
+        /// </summary>
+        /// <param name="url">The Fullname or URL of the directory.</param>
+        /// <param name="clients">A collection of connection clients.</param>
+        /// <returns>A ZephyrFile implementation.</returns>
         public static ZephyrDirectory GetZephyrDirectory(string url, Clients clients = null)
         {
             ZephyrDirectory dir = null;
@@ -111,18 +137,46 @@ namespace Zephyr.Filesystem
             return dir;
         }
 
+        /// <summary>
+        /// Static method to create a ZephyrFile whose implementation if based on the Fullname / URL passed in.
+        /// </summary>
+        /// <param name="fileName">The Fullname or URL of the file.</param>
+        /// <param name="clients">A collection of connection clients.</param>
+        /// <param name="overwrite">Will overwrite the file if it already exists.</param>
+        /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
+        /// <param name="callback">Optional method that is called for logging purposes.</param>
+        /// <returns>A ZephyrFile instance.</returns>
         public static ZephyrFile CreateFile(string fileName, Clients clients = null, bool overwrite = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             ZephyrFile file = Utilities.GetZephyrFile(fileName, clients);
             return file.Create(overwrite, callbackLabel, callback);
         }
 
+        /// <summary>
+        /// Static method to create a ZephyrDirectory whose implementation is based on the Fullname / URL passed in.
+        /// </summary>
+        /// <param name="dirName">The Fullname or URL of the directory.</param>
+        /// <param name="clients">A collection of connection clients.</param>
+        /// <param name="failIfExists">Throws an error if the directory already exists.</param>
+        /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
+        /// <param name="callback">Optional method that is called for logging purposes.</param>
+        /// <returns>A ZephyrDirectory instance.</returns>
         public static ZephyrDirectory CreateDirectory(string dirName, Clients clients = null, bool failIfExists = false, String callbackLabel = null, Action<string, string> callback = null)
         {
             ZephyrDirectory dir = Utilities.GetZephyrDirectory(dirName, clients);
             return dir.Create(failIfExists, callbackLabel, callback);
         }
 
+        /// <summary>
+        /// Static method to delete a ZephyrFile or ZephyrDirectory based on the Fullname / URL passed in.
+        /// </summary>
+        /// <param name="name">The Fullname or URL of the file or directory.</param>
+        /// <param name="clients">A collection of connection clients.</param>
+        /// <param name="recurse">Remove all objects in the directory as well.  If set to "false", directory must be empty or an exception will be thrown.</param>
+        /// <param name="stopOnError">Stop deleting objects in the directory if an error is encountered.</param>
+        /// <param name="verbose">Log each object that is deleted from the directory.</param>
+        /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
+        /// <param name="callback">Optional method that is called for logging purposes.</param>
         public static void Delete(string name, Clients clients = null, bool recurse = true, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             if (Utilities.IsDirectory(name))
@@ -137,6 +191,12 @@ namespace Zephyr.Filesystem
             }
         }
 
+        /// <summary>
+        /// Static method to determine if a file or directory exists based on the Fullname/URL passed in.
+        /// </summary>
+        /// <param name="name">The Fullname or URL of the file or directory.</param>
+        /// <param name="clients">A collection of connection clients.</param>
+        /// <returns>Whether or now the file or directory already exists.</returns>
         public static bool Exists(string name, Clients clients = null)
         {
             if (Utilities.IsDirectory(name))
@@ -149,9 +209,6 @@ namespace Zephyr.Filesystem
                 ZephyrFile file = Utilities.GetZephyrFile(name, clients);
                 return file.Exists();
             }
-
         }
-
-
     }
 }

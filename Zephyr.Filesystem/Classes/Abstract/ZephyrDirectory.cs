@@ -7,25 +7,106 @@ using System.IO;
 
 namespace Zephyr.Filesystem
 {
+    /// <summary>
+    /// Base class for all implementations of a "Directory" object.  It implements methods common to all directories where it can and
+    /// abstracts methods that are specific to the implementation itself.
+    /// </summary>
     public abstract class ZephyrDirectory
     {
+        /// <summary>
+        /// The full name or URL of the directory.
+        /// </summary>
         public abstract String FullName { get; set; }
 
+        /// <summary>
+        /// The name of the directory.
+        /// </summary>
         public abstract String Name { get; }
+
+        /// <summary>
+        /// The full name or URL of the parent directory.
+        /// </summary>
         public abstract String Parent { get; }
+
+        /// <summary>
+        /// The protocol, drive or share of the directory (s3://, C:\, \\localhost\c$, etc...)
+        /// </summary>
         public abstract String Root { get; }
 
+        /// <summary>
+        /// Creates a ZephyrDirectory object.
+        /// </summary>
+        /// <param name="failIfExists">Throws an error if the directory already exists.</param>
+        /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
+        /// <param name="callback">Optional method that is called for logging purposes.</param>
+        /// <returns>An instance of a ZephyrDirectory Implementation.</returns>
         public abstract ZephyrDirectory Create(bool failIfExists = false, String callbackLabel = null, Action<string, string> callback = null);
+
+        /// <summary>
+        /// Deletes a ZephyrDirecory object.
+        /// </summary>
+        /// <param name="recurse">Remove all objects in the directory as well.  If set to "false", directory must be empty or an exception will be thrown.</param>
+        /// <param name="stopOnError">Stop deleting objects in the directory if an error is encountered.</param>
+        /// <param name="verbose">Log each object that is deleted from the directory.</param>
+        /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
+        /// <param name="callback">Optional method that is called for logging purposes.</param>
         public abstract void Delete(bool recurse = true, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null);
+
+        /// <summary>
+        /// Determines if a directory exists.
+        /// </summary>
+        /// <returns>Whether or not the directory already exists.</returns>
         public abstract bool Exists();
 
+        /// <summary>
+        /// Creates a ZephyrFile implementation of the same implementation type as the ZephyrDirectory calling it.
+        /// </summary>
+        /// <param name="fullName">Full name or URL of the file to be created.</param>
+        /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
+        /// <param name="callback">Optional method that is called for logging purposes.</param>
+        /// <returns>A ZephyrFile implementation.</returns>
         public abstract ZephyrFile CreateFile(string fullName, String callbackLabel = null, Action<string, string> callback = null);
+
+        /// <summary>
+        /// Creates a ZephyrDirectory implementation of the same implementation type as the ZephyrDirectory calling it.
+        /// </summary>
+        /// <param name="fullName">Full name or URL of the directory to be created.</param>
+        /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
+        /// <param name="callback">Optional method that is called for logging purposes.</param>
+        /// <returns>A ZephyrDirectory implementation.</returns>
         public abstract ZephyrDirectory CreateDirectory(string fullName, String callbackLabel = null, Action<string, string> callback = null);
 
+        /// <summary>
+        /// Returns a list of all Directories which are direct children of the ZephyrDirectory.
+        /// </summary>
+        /// <returns>An enumeration of ZephyrDirectory implementations matching the calling ZephyrDirectory implementation.</returns>
         public abstract IEnumerable<ZephyrDirectory> GetDirectories();
+
+        /// <summary>
+        /// Returns a list of all Files which are direct children of the ZephyrDirectory.
+        /// </summary>
+        /// <returns>An enumeration of ZephyrFile implementations.</returns>
         public abstract IEnumerable<ZephyrFile> GetFiles();
+
+        /// <summary>
+        /// Combines strings into a path based on the implementation type. 
+        /// </summary>
+        /// <param name="paths">An array of strings to combine.</param>
+        /// <returns>The combined paths.</returns>
         public abstract String PathCombine(params string[] paths);
 
+        /// <summary>
+        /// Method to copy the contents of the ZephyrDirectory into another ZephyrDirectory.  
+        /// It works by using the base "Stream" property and "Create"methods each implementation must create.
+        /// Thus, the ZephyrDirectories do not have to be of the same implementation type.
+        /// </summary>
+        /// <param name="target">The destination ZephyrDirectory.</param>
+        /// <param name="recurse">Copy all sub-directories and all files under this directory.</param>
+        /// <param name="overwrite">Should files copied overwrite existing files of the same name.  Directories will be merged.</param>
+        /// <param name="stopOnError">Stop copying when an error is encountered.</param>
+        /// <param name="verbose">Log each file and directory copied.</param>
+        /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
+        /// <param name="callback">Optional method that is called for logging purposes.</param>
         public void CopyTo(ZephyrDirectory target, bool recurse = true, bool overwrite = true, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             if (this.Exists())
@@ -76,6 +157,17 @@ namespace Zephyr.Filesystem
             }
         }
 
+        /// <summary>
+        /// Method to move the contents of the ZephyrDirectory to another ZephyrDirectory.  
+        /// It works by using the base "Stream" property and "Create"methods each implementation must create.
+        /// Thus, the ZephyrDirectories do not have to be of the same implementation type.
+        /// </summary>
+        /// <param name="target">The destination ZephyrDirectory.</param>
+        /// <param name="overwrite">Should files copied overwrite existing files of the same name.  Directories will be merged.</param>
+        /// <param name="stopOnError">Stop moving when an error is encountered.</param>
+        /// <param name="verbose">Log each file and directory moved.</param>
+        /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
+        /// <param name="callback">Optional method that is called for logging purposes.</param>
         public void MoveTo(ZephyrDirectory target, bool overwrite = true, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             if (this.Exists())
@@ -126,12 +218,23 @@ namespace Zephyr.Filesystem
             }
         }
 
+        /// <summary>
+        /// Method to determine if a ZephyrDirectory Implementation is empty.
+        /// </summary>
+        /// <returns>Returns true if the ZephyrDirectory contains no Directories or Files.</returns>
         public bool IsEmpty()
         {
             return (GetDirectories().Count() == 0 && GetFiles().Count() == 0);
         }
 
-        public void Clear(bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
+        /// <summary>
+        /// Deletes the contents of the ZephyrDirectory, but leaves the main directory intact.
+        /// </summary>
+        /// <param name="stopOnError">Stop deleting when an error is encountered.</param>
+        /// <param name="verbose">Log each file and directory deleted.</param>
+        /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
+        /// <param name="callback">Optional method that is called for logging purposes.</param>
+        public void Purge(bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             foreach ( ZephyrDirectory dir in GetDirectories() )
                 dir.Delete(true, stopOnError, verbose, callbackLabel, callback);
