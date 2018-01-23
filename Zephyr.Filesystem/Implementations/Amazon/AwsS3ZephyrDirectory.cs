@@ -223,22 +223,20 @@ namespace Zephyr.Filesystem
         /// <returns>An enumeration of AmazonS3ZephyrDirectory objects.</returns>
         public override IEnumerable<ZephyrDirectory> GetDirectories()
         {
-            List<ZephyrDirectory> dirs = new List<ZephyrDirectory>();
-            List<S3Object> objects = GetObjects( BucketName, ObjectKey );
-
             if (_client == null)
                 throw new Exception($"AWSClient Not Set.");
 
-            foreach ( S3Object obj in objects )
-                if ( obj.Key.EndsWith( @"/" ) )
-                {
-                    String dirName = obj.Key;
-                    if (!String.IsNullOrWhiteSpace(ObjectKey))
-                        dirName = obj.Key.Replace( ObjectKey, "" );
-                    // Exclude Sub-Directories
-                    if ( dirName.Split( new char[] { '/' } ).Length == 2 )
-                        dirs.Add( new AwsS3ZephyrDirectory( _client, $"s3://{obj.BucketName}/{obj.Key}" ) );
-                }
+            List<ZephyrDirectory> dirs = new List<ZephyrDirectory>();
+            S3DirectoryInfo dInfo = new S3DirectoryInfo(this._client.Client, this.BucketName, ObjectKey.Replace('/', '\\'));
+            S3DirectoryInfo[] children = dInfo.GetDirectories();
+
+            foreach (S3DirectoryInfo child in children)
+            {
+                string childName = child.Name;
+                if (String.IsNullOrWhiteSpace(childName))
+                    childName = "/";
+                dirs.Add(new AwsS3ZephyrDirectory(_client, PathCombine(this.FullName, childName)));
+            }
 
             return dirs;
         }
@@ -249,22 +247,15 @@ namespace Zephyr.Filesystem
         /// <returns>An enumeration of AmazonS3ZephyrFile objects.</returns>
         public override IEnumerable<ZephyrFile> GetFiles()
         {
-            List<ZephyrFile> files = new List<ZephyrFile>();
-            List<S3Object> objects = GetObjects( BucketName, ObjectKey );
-
             if (_client == null)
                 throw new Exception($"AWSClient Not Set.");
 
-            foreach ( S3Object obj in objects )
-                if ( !obj.Key.EndsWith( @"/" ) )
-                {
-                    String fileName = obj.Key;
-                    if (!String.IsNullOrWhiteSpace(ObjectKey))
-                        fileName = obj.Key.Replace( ObjectKey, "" );
-                    // Exclude Sub-Directories
-                    if ( fileName.Split( new char[] { '/' } ).Length == 1 )
-                        files.Add( new AwsS3ZephyrFile( _client, $"s3://{obj.BucketName}/{obj.Key}" ) );
-                }
+            List<ZephyrFile> files = new List<ZephyrFile>();
+            S3DirectoryInfo dInfo = new S3DirectoryInfo(this._client.Client, this.BucketName, ObjectKey.Replace('/', '\\'));
+            S3FileInfo[] children = dInfo.GetFiles();
+
+            foreach (S3FileInfo child in children)
+                files.Add(new AwsS3ZephyrFile(_client, PathCombine(this.FullName, child.Name)));
 
             return files;
         }
@@ -291,26 +282,6 @@ namespace Zephyr.Filesystem
             }
 
             return sb.ToString();
-        }
-
-        /// <summary>
-        /// Private method to get AmazonS3 objects from a named bucket, matching a given prefix.
-        /// </summary>
-        /// <param name="bucketName">The AmazonS3 Bucket Name.</param>
-        /// <param name="prefix">The starting prefix of the S3 object key to match on.</param>
-        /// <returns>An enumeration of S3Objects matching the given prefix and bucketname.</returns>
-        private List<S3Object> GetObjects(string bucketName, string prefix = null)
-        {
-            ListObjectsV2Request request = new ListObjectsV2Request();
-            request.BucketName = bucketName;
-            if ( prefix != null )
-                request.Prefix = prefix;
-
-            if (_client == null)
-                throw new Exception($"AWSClient Not Set.");
-
-            ListObjectsV2Response response = _client.Client.ListObjectsV2( request );
-            return response.S3Objects;
         }
     }
 }
