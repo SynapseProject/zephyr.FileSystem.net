@@ -180,7 +180,16 @@ namespace Zephyr.Filesystem
         /// <returns>The combined paths.</returns>
         public override string PathCombine(params string[] paths)
         {
-            return Path.Combine( paths );
+            List<string> fixedPaths = new List<string>();
+            foreach (string path in paths)
+            {
+                if (path == "/" || path == "\\")
+                    fixedPaths.Add($"_{path}");     // Windows doesn't allow blank directory names, replace with underscore.
+                else
+                    fixedPaths.Add(path);
+            }
+
+            return Path.Combine( fixedPaths.ToArray() );
         }
     }
 }

@@ -231,12 +231,7 @@ namespace Zephyr.Filesystem
             S3DirectoryInfo[] children = dInfo.GetDirectories();
 
             foreach (S3DirectoryInfo child in children)
-            {
-                string childName = child.Name;
-                if (String.IsNullOrWhiteSpace(childName))
-                    childName = "/";
-                dirs.Add(new AwsS3ZephyrDirectory(_client, PathCombine(this.FullName, childName)));
-            }
+                dirs.Add(new AwsS3ZephyrDirectory(_client, PathCombine(this.FullName, $"{child.Name}/")));
 
             return dirs;
         }
