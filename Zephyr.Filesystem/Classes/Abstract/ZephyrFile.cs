@@ -126,12 +126,25 @@ namespace Zephyr.Filesystem
         /// <param name="verbose">Log details of the file being copied.</param>
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
-        public void CopyTo(ZephyrFile file, bool overwrite = true, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
+        public void CopyTo(ZephyrFile file, bool overwrite = true, bool createMissingDirectories = true, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             try
             {
+                if (!this.Exists())
+                    throw new Exception($"File [{this.FullName}] Does Not Exist.");
+
                 if (file.Exists() && !overwrite)
                     throw new Exception($"File [{file.FullName}] Already Exists.");
+
+                String targetDirectory = file.FullName.Substring(0, file.FullName.LastIndexOf(file.Name));
+                ZephyrDirectory targetDir = file.CreateDirectory(targetDirectory);
+                if (!targetDir.Exists())
+                {
+                    if (createMissingDirectories)
+                        targetDir.Create();
+                    else
+                        throw new Exception($"Directory [{targetDir.FullName}] Does Not Exist.");
+                }
 
                 Stream source = this.Open(AccessType.Read);
                 Stream target = file.Open(AccessType.Write);
@@ -143,6 +156,7 @@ namespace Zephyr.Filesystem
 
                 if (verbose)
                     Logger.Log($"Copied File [{this.FullName}] to [{file.FullName}].", callbackLabel, callback);
+
             }
             catch (Exception e)
             {
@@ -159,18 +173,19 @@ namespace Zephyr.Filesystem
         /// </summary>
         /// <param name="file">The destination ZephyrFile.</param>
         /// <param name="overwrite">Should the ZephyrFile overwrite existing ZephyrFile if it exists.</param>
+        /// <param name="createMissingDirectories">Create any missing directories in the path to the file.</param>
         /// <param name="stopOnError">Throw an exception if the move fails.</param>
         /// <param name="verbose">Log details of the file being moved.</param>
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
-        public void MoveTo(ZephyrFile file, bool overwrite = true, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
+        public void MoveTo(ZephyrFile file, bool overwrite = true, bool createMissingDirectories = true, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             try
             {
                 if (file.Exists() && !overwrite)
                     throw new Exception($"File [{file.FullName}] Already Exists.");
 
-                CopyTo(file, overwrite, false);
+                CopyTo(file, overwrite, createMissingDirectories, stopOnError, false);
                 this.Delete(stopOnError: stopOnError, verbose: false);
                 if (verbose)
                     Logger.Log($"Moved File [{this.FullName}] to [{file.FullName}].", callbackLabel, callback);
@@ -188,15 +203,16 @@ namespace Zephyr.Filesystem
         /// </summary>
         /// <param name="dir">The destination directory.</param>
         /// <param name="overwrite">Should the ZephyrFile overwrite existing ZephyrFile if it exists.</param>
+        /// <param name="createMissingDirectories">Create any missing directories in the path to the file.</param>
         /// <param name="stopOnError">Throw an exception if the copy fails.</param>
         /// <param name="verbose">Log details of the file being copied.</param>
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
-        public void CopyTo(ZephyrDirectory dir, bool overwrite = true, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
+        public void CopyTo(ZephyrDirectory dir, bool overwrite = true, bool createMissingDirectories = true, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             String targetFilePath = dir.PathCombine(dir.FullName, this.Name);
             ZephyrFile targetFile = dir.CreateFile(targetFilePath);
-            CopyTo(targetFile, overwrite, stopOnError, false, callbackLabel, callback);
+            CopyTo(targetFile, overwrite, createMissingDirectories, stopOnError, false, callbackLabel, callback);
             if (verbose)
                 Logger.Log($"Copied File [{this.FullName}] to [{dir.FullName}].", callbackLabel, callback);
         }
@@ -206,13 +222,14 @@ namespace Zephyr.Filesystem
         /// </summary>
         /// <param name="dir">The destination directory.</param>
         /// <param name="overwrite">Should the ZephyrFile overwrite existing ZephyrFile if it exists.</param>
+        /// <param name="createMissingDirectories">Create any missing directories in the path to the file.</param>
         /// <param name="stopOnError">Throw an exception if the move fails.</param>
         /// <param name="verbose">Log details of the file being moved.</param>
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
-        public void MoveTo(ZephyrDirectory dir, bool overwrite = true, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
+        public void MoveTo(ZephyrDirectory dir, bool overwrite = true, bool createMissingDirectories = true, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
-            CopyTo(dir, overwrite, stopOnError, false,callbackLabel, callback);
+            CopyTo(dir, createMissingDirectories, overwrite, stopOnError, false, callbackLabel, callback);
             this.Delete(stopOnError: stopOnError, verbose: false);
             if (verbose)
                 Logger.Log($"Moved File [{this.FullName}] to [{dir.FullName}].", callbackLabel, callback);

@@ -97,7 +97,7 @@ namespace Zephyr.Filesystem
 
         /// <summary>
         /// Method to copy the contents of the ZephyrDirectory into another ZephyrDirectory.  
-        /// It works by using the base "Stream" property and "Create"methods each implementation must create.
+        /// It works by using the base "Stream" property and "Create" methods each implementation must create.
         /// Thus, the ZephyrDirectories do not have to be of the same implementation type.
         /// </summary>
         /// <param name="target">The destination ZephyrDirectory.</param>
@@ -135,7 +135,7 @@ namespace Zephyr.Filesystem
                     {
                         String targetFileName = target.PathCombine(target.FullName, file.Name);
                         ZephyrFile targetFile = target.CreateFile(targetFileName, callbackLabel, callback);
-                        file.CopyTo(targetFile, overwrite, stopOnError, verbose, callbackLabel, callback);
+                        file.CopyTo(targetFile, overwrite, true, stopOnError, verbose, callbackLabel, callback);
                     }
                     catch (Exception e)
                     {
@@ -196,7 +196,7 @@ namespace Zephyr.Filesystem
                     {
                         String targetFileName = target.PathCombine(target.FullName, file.Name);
                         ZephyrFile targetFile = target.CreateFile(targetFileName);
-                        file.MoveTo(targetFile, stopOnError, overwrite, verbose, callbackLabel, callback);
+                        file.MoveTo(targetFile, overwrite, true, stopOnError, verbose, callbackLabel, callback);
                     }
                     catch (Exception e)
                     {
