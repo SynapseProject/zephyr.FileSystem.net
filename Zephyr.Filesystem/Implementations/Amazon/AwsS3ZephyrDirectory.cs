@@ -92,6 +92,22 @@ namespace Zephyr.Filesystem
             }
         }
 
+        /// <summary>
+        /// Implementation of the ZephyrDirectory Exists method in Amazon S3 Storage.
+        /// </summary>
+        public override bool Exists
+        {
+            get
+            {
+                if (_client == null)
+                    throw new Exception($"AWSClient Not Set.");
+
+                string dirInfoKey = ObjectKey.Replace('/', '\\');
+                S3DirectoryInfo dirInfo = new S3DirectoryInfo(_client.Client, BucketName, dirInfoKey);
+                return dirInfo.Exists;
+            }
+        }
+
 
         /// <summary>
         /// Creates an empty AmazonS3ZephyrDirectory
@@ -117,12 +133,12 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>An AmazonS3ZephyrDictionary Instance.</returns>
-        public override ZephyrDirectory Create(bool failIfExists = false, string callbackLabel = null, Action<string, string> callback = null)
+        public override ZephyrDirectory Create(bool failIfExists = false, bool verbose = true, string callbackLabel = null, Action<string, string> callback = null)
         {
             if (_client == null)
                 throw new Exception($"AWSClient Not Set.");
 
-            if (this.Exists() && failIfExists)
+            if (this.Exists && failIfExists)
                 throw new Exception($"Directory [{FullName}] Already Exists.");
 
             String key = ObjectKey;
@@ -130,7 +146,8 @@ namespace Zephyr.Filesystem
                 key = key.Substring(0, key.Length - 1);
             S3DirectoryInfo dirInfo = new S3DirectoryInfo(_client.Client, BucketName, key);
             dirInfo.Create();
-            callback?.Invoke(callbackLabel, $"Directory [{FullName}] Was Created.");
+            if (verbose)
+                Logger.Log($"Directory [{FullName}] Was Created.", callbackLabel, callback);
             return this;
         }
 
@@ -201,20 +218,6 @@ namespace Zephyr.Filesystem
                 if (stopOnError)
                     throw;
             }
-        }
-
-        /// <summary>
-        /// Implementation of the ZephyrDirectory Exists method in Amazon S3 Storage.
-        /// </summary>
-        /// <returns>Whether or not the directory already exists.</returns>
-        public override bool Exists()
-        {
-            if (_client == null)
-                throw new Exception($"AWSClient Not Set.");
-
-            string dirInfoKey = ObjectKey.Replace('/', '\\');
-            S3DirectoryInfo dirInfo = new S3DirectoryInfo(_client.Client, BucketName, dirInfoKey);
-            return dirInfo.Exists;
         }
 
         /// <summary>

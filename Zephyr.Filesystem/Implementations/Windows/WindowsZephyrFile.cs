@@ -30,6 +30,11 @@ namespace Zephyr.Filesystem
         public override string FullName { get; set; }
 
         /// <summary>
+        /// Does the directory exist.
+        /// </summary>
+        public override bool Exists { get { return File.Exists(FullName); } }
+
+        /// <summary>
         /// Creates an empty WindowsZephyrFile object.
         /// </summary>
         public WindowsZephyrFile() : base() { }
@@ -89,7 +94,7 @@ namespace Zephyr.Filesystem
         {
             try
             {
-                if (this.Exists() && !overwrite)
+                if (this.Exists && !overwrite)
                     throw new Exception($"File [{this.FullName}] Already Exists.");
 
                 this.Stream = File.Open(FullName, System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.Write);
@@ -140,7 +145,11 @@ namespace Zephyr.Filesystem
             {
                 FileInfo fileInfo = new FileInfo(FullName);
                 if (fileInfo.Exists)
+                {
+                    if (IsOpen)
+                        Close();
                     fileInfo.Delete();
+                }
 
                 if (verbose)
                     Logger.Log($"File [{FullName}] Was Deleted.", callbackLabel, callback);
@@ -152,15 +161,5 @@ namespace Zephyr.Filesystem
                     throw;
             }
         }
-
-        /// <summary>
-        /// Implementation of the ZephyrDirectory Exists method in Windows.
-        /// </summary>
-        /// <returns>Whether or not the file already exists.</returns>
-        public override bool Exists()
-        {
-            return File.Exists(FullName);
-        }
-
     }
 }

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zephyr.Filesystem", "Zephyr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zephyr.Filesystem.Sandbox", "Zephyr.Filesystem.Sandbox\Zephyr.Filesystem.Sandbox.csproj", "{3F9E4A11-0039-4100-A40B-90CFB13E0816}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zephyr.Filesystem.Tests", "Zephyr.Filesystem.Tests\Zephyr.Filesystem.Tests.csproj", "{B380309B-097D-410C-B273-C6D8909FD4F7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{3F9E4A11-0039-4100-A40B-90CFB13E0816}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3F9E4A11-0039-4100-A40B-90CFB13E0816}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3F9E4A11-0039-4100-A40B-90CFB13E0816}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B380309B-097D-410C-B273-C6D8909FD4F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B380309B-097D-410C-B273-C6D8909FD4F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B380309B-097D-410C-B273-C6D8909FD4F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B380309B-097D-410C-B273-C6D8909FD4F7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

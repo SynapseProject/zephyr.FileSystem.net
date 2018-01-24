@@ -161,10 +161,10 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>A ZephyrDirectory instance.</returns>
-        public static ZephyrDirectory CreateDirectory(string dirName, Clients clients = null, bool failIfExists = false, String callbackLabel = null, Action<string, string> callback = null)
+        public static ZephyrDirectory CreateDirectory(string dirName, Clients clients = null, bool failIfExists = false, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             ZephyrDirectory dir = Utilities.GetZephyrDirectory(dirName, clients);
-            return dir.Create(failIfExists, callbackLabel, callback);
+            return dir.Create(failIfExists, verbose, callbackLabel, callback);
         }
 
         /// <summary>
@@ -202,12 +202,12 @@ namespace Zephyr.Filesystem
             if (Utilities.IsDirectory(name))
             {
                 ZephyrDirectory dir = Utilities.GetZephyrDirectory(name, clients);
-                return dir.Exists();
+                return dir.Exists;
             }
             else
             {
                 ZephyrFile file = Utilities.GetZephyrFile(name, clients);
-                return file.Exists();
+                return file.Exists;
             }
         }
     }

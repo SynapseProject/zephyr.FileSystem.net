@@ -30,7 +30,7 @@ namespace Zephyr.Filesystem
         /// </summary>
         public override String FullName
         {
-            get { return dirInfo.FullName; }
+            get { return $"{dirInfo.FullName}\\"; }
             set { dirInfo = new DirectoryInfo( value ); }
         }
 
@@ -42,12 +42,19 @@ namespace Zephyr.Filesystem
         /// <summary>
         /// The parent of the Windows Directory.
         /// </summary>
-        public override String Parent { get { return dirInfo?.Parent?.FullName; } }
+        public override String Parent { get { return $"{dirInfo?.Parent?.FullName}\\"; } }
+
 
         /// <summary>
         /// The root or protocol for the Windows Directory (Drive Letter or Network Server/Share)
         /// </summary>
         public override String Root { get { return dirInfo?.Root?.FullName; } }
+
+        /// <summary>
+        /// Implementation of the ZephyrDirectory Exists method using Windows FileSystem.
+        /// </summary>
+        public override bool Exists { get { return Directory.Exists(FullName); } }
+
 
         /// <summary>
         /// Implementation of the ZephyrDirectory Create method using Windows FileSystem.
@@ -56,13 +63,14 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>A WindowsZephyrDictionary Instance.</returns>
-        public override ZephyrDirectory Create(bool failIfExists = false, String callbackLabel = null, Action<string, string> callback = null)
+        public override ZephyrDirectory Create(bool failIfExists = false, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             if (!Directory.Exists(FullName))
                 Directory.CreateDirectory(FullName);
             else if (failIfExists)
                 throw new Exception($"Directory [{FullName}] Already Exists.");
-            callback?.Invoke(callbackLabel, $"Directory [{FullName}] Was Created.");
+            if (verbose)
+                Logger.Log($"Directory [{FullName}] Was Created.", callbackLabel, callback);
             return this;
         }
 
@@ -127,15 +135,6 @@ namespace Zephyr.Filesystem
             }
 
             dirInfo = null;     // TODO : Why did I do this?
-        }
-
-        /// <summary>
-        /// Implementation of the ZephyrDirectory Exists method using Windows FileSystem.
-        /// </summary>
-        /// <returns>Whether or not the directory already exists.</returns>
-        public override bool Exists()
-        {
-            return Directory.Exists(FullName);
         }
 
         /// <summary>

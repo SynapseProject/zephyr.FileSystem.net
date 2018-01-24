@@ -19,7 +19,7 @@ namespace Zephyr.Filesystem
     /// </summary>
     public class AwsS3ZephyrFile : ZephyrFile
     {
-         
+
         private string UrlPattern = @"^(s3:\/\/)(.*?)\/(.*)$";        // Gets Root, Bucket Name and Object Key
 
         private AwsClient _client = null;
@@ -27,7 +27,7 @@ namespace Zephyr.Filesystem
         /// <summary>
         /// The name of the file in Amazon S3.
         /// </summary>
-        public override string Name { get { return FullName.Substring( FullName.LastIndexOf( @"/" ) + 1 ); } }
+        public override string Name { get { return FullName.Substring(FullName.LastIndexOf(@"/") + 1); } }
 
         /// <summary>
         /// The Fullname / URL of the file in Amazon S3.
@@ -37,7 +37,7 @@ namespace Zephyr.Filesystem
             set
             {
                 _fullName = value;
-                Match match = Regex.Match( value, UrlPattern, RegexOptions.IgnoreCase );
+                Match match = Regex.Match(value, UrlPattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
                     BucketName = match.Groups[2].Value;
@@ -57,6 +57,23 @@ namespace Zephyr.Filesystem
         /// The Amazon S3 Object Key.
         /// </summary>
         public string ObjectKey { get; internal set; }
+
+        /// <summary>
+        /// Does the file exist.
+        /// </summary>
+        public override bool Exists
+        {
+            get
+            {
+                if (_client == null)
+                    throw new Exception($"AWSClient Not Set.");
+
+                String key = ObjectKey;
+                key = key.Replace('/', '\\');
+                S3FileInfo fileInfo = new S3FileInfo(_client.Client, BucketName, key);
+                return fileInfo.Exists;
+            }
+        }
 
         /// <summary>
         /// Creates an empty AmazonS3ZephyrFile
@@ -125,7 +142,7 @@ namespace Zephyr.Filesystem
         {
             try
             {
-                if (this.Exists() && !overwrite)
+                if (this.Exists && !overwrite)
                     throw new Exception($"File [{this.FullName}] Already Exists.");
 
                 if (_client == null)
@@ -184,7 +201,11 @@ namespace Zephyr.Filesystem
                 S3FileInfo fileInfo = new S3FileInfo(_client.Client, BucketName, ObjectKey);
 
                 if (fileInfo.Exists)
+                {
+                    if (IsOpen)
+                        Close();
                     fileInfo.Delete();
+                }
 
                 if (verbose)
                     Logger.Log($"File [{FullName}] Was Deleted.", callbackLabel, callback);
@@ -196,21 +217,5 @@ namespace Zephyr.Filesystem
                     throw;
             }
         }
-
-        /// <summary>
-        /// Implementation of the ZephyrFile Exists method in Amazon S3 Storage.
-        /// </summary>
-        /// <returns>Whether or not the file already exists.</returns>
-        public override bool Exists()
-        {
-            if (_client == null)
-                throw new Exception($"AWSClient Not Set.");
-
-            String key = ObjectKey;
-            key = key.Replace('/', '\\');
-            S3FileInfo fileInfo = new S3FileInfo(_client.Client, BucketName, key);
-            return fileInfo.Exists;
-        }
-
     }
 }

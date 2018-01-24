@@ -34,13 +34,18 @@ namespace Zephyr.Filesystem
         public abstract String Root { get; }
 
         /// <summary>
+        /// Determines if a directory exists.
+        /// </summary>
+        public abstract bool Exists { get; }
+
+        /// <summary>
         /// Creates a ZephyrDirectory object.
         /// </summary>
         /// <param name="failIfExists">Throws an error if the directory already exists.</param>
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>An instance of a ZephyrDirectory Implementation.</returns>
-        public abstract ZephyrDirectory Create(bool failIfExists = false, String callbackLabel = null, Action<string, string> callback = null);
+        public abstract ZephyrDirectory Create(bool failIfExists = false, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null);
 
         /// <summary>
         /// Deletes a ZephyrDirecory object.
@@ -51,13 +56,7 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         public abstract void Delete(bool recurse = true, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null);
-
-        /// <summary>
-        /// Determines if a directory exists.
-        /// </summary>
-        /// <returns>Whether or not the directory already exists.</returns>
-        public abstract bool Exists();
-
+                
         /// <summary>
         /// Creates a ZephyrFile implementation of the same implementation type as the ZephyrDirectory calling it.
         /// </summary>
@@ -109,7 +108,7 @@ namespace Zephyr.Filesystem
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         public void CopyTo(ZephyrDirectory target, bool recurse = true, bool overwrite = true, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
-            if (this.Exists())
+            if (this.Exists)
             {
                 foreach (ZephyrDirectory childDir in GetDirectories())
                 {
@@ -170,7 +169,7 @@ namespace Zephyr.Filesystem
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         public void MoveTo(ZephyrDirectory target, bool overwrite = true, bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
-            if (this.Exists())
+            if (this.Exists)
             {
                 foreach (ZephyrDirectory childDir in GetDirectories())
                 {

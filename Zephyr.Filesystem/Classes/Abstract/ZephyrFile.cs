@@ -24,6 +24,11 @@ namespace Zephyr.Filesystem
         public abstract String Name { get; }
 
         /// <summary>
+        /// Determines if a file exists.
+        /// </summary>
+        public abstract bool Exists { get; }
+
+        /// <summary>
         /// The Stream object for the file.
         /// </summary>
         public System.IO.Stream Stream { get; internal set; }
@@ -76,12 +81,6 @@ namespace Zephyr.Filesystem
         public abstract void Delete(bool stopOnError = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null);
 
         /// <summary>
-        /// Determines if a file exists.
-        /// </summary>
-        /// <returns>Whether or not the file already exists.</returns>
-        public abstract bool Exists();
-
-        /// <summary>
         /// Creates a ZephyrFile implementation of the same implementation type as the ZephyrFile calling it.
         /// </summary>
         /// <param name="fullName">Full name or URL of the file to be created.</param>
@@ -130,15 +129,15 @@ namespace Zephyr.Filesystem
         {
             try
             {
-                if (!this.Exists())
+                if (!this.Exists)
                     throw new Exception($"File [{this.FullName}] Does Not Exist.");
 
-                if (file.Exists() && !overwrite)
+                if (file.Exists && !overwrite)
                     throw new Exception($"File [{file.FullName}] Already Exists.");
 
                 String targetDirectory = file.FullName.Substring(0, file.FullName.LastIndexOf(file.Name));
                 ZephyrDirectory targetDir = file.CreateDirectory(targetDirectory);
-                if (!targetDir.Exists())
+                if (!targetDir.Exists)
                 {
                     if (createMissingDirectories)
                         targetDir.Create();
@@ -182,7 +181,7 @@ namespace Zephyr.Filesystem
         {
             try
             {
-                if (file.Exists() && !overwrite)
+                if (file.Exists && !overwrite)
                     throw new Exception($"File [{file.FullName}] Already Exists.");
 
                 CopyTo(file, overwrite, createMissingDirectories, stopOnError, false);
