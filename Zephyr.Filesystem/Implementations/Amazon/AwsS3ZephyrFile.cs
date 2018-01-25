@@ -99,7 +99,7 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>The open Stream for the AmazonS3ZephyrFile.</returns>
-        public override System.IO.Stream Open(AccessType access, string callbackLabel = null, Action<string, string> callback = null)
+        public override System.IO.Stream Open(AccessType access, bool verbose = true, string callbackLabel = null, Action<string, string> callback = null)
         {
             if ( !IsOpen )
             {
@@ -122,7 +122,7 @@ namespace Zephyr.Filesystem
         /// </summary>
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
-        public override void Close(string callbackLabel = null, Action<string, string> callback = null)
+        public override void Close(bool verbose = true, string callbackLabel = null, Action<string, string> callback = null)
         {
             if (IsOpen)
             {
@@ -138,7 +138,7 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>An instance of a AmazonS3ZephyrFile.</returns>
-        public override ZephyrFile Create(bool overwrite = true, string callbackLabel = null, Action<string, string> callback = null)
+        public override ZephyrFile Create(bool overwrite = true, bool verbose = true, string callbackLabel = null, Action<string, string> callback = null)
         {
             try
             {
@@ -150,7 +150,8 @@ namespace Zephyr.Filesystem
 
                 S3FileInfo fileInfo = new S3FileInfo(_client.Client, BucketName, ObjectKey);
                 this.Stream = fileInfo.Create();
-                callback?.Invoke(callbackLabel, $"File [{FullName}] Was Created.");
+                if (verbose)
+                    Logger.Log($"File [{FullName}] Was Created.", callbackLabel, callback);
                 return this;
             }
             catch (Exception e)
@@ -167,7 +168,7 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>An AmazonS3ZephyrFile implementation.</returns>
-        public override ZephyrFile CreateFile(string fileName, String callbackLabel = null, Action<string, string> callback = null)
+        public override ZephyrFile CreateFile(string fileName, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             return new AwsS3ZephyrFile(_client, fileName);
         }
@@ -179,7 +180,7 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>An AmazonS3ZephyrDirectory implementation.</returns>
-        public override ZephyrDirectory CreateDirectory(string dirName, String callbackLabel = null, Action<string, string> callback = null)
+        public override ZephyrDirectory CreateDirectory(string dirName, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             return new AwsS3ZephyrDirectory(_client, dirName);
         }

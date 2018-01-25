@@ -146,10 +146,10 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>A ZephyrFile instance.</returns>
-        public static ZephyrFile CreateFile(string fileName, Clients clients = null, bool overwrite = true, String callbackLabel = null, Action<string, string> callback = null)
+        public static ZephyrFile CreateFile(string fileName, Clients clients = null, bool overwrite = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             ZephyrFile file = Utilities.GetZephyrFile(fileName, clients);
-            return file.Create(overwrite, callbackLabel, callback);
+            return file.Create(overwrite, verbose, callbackLabel, callback);
         }
 
         /// <summary>

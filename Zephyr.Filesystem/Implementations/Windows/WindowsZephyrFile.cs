@@ -52,15 +52,19 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>The open Stream for the WindowsZephyrFile.</returns>
-        public override System.IO.Stream Open(AccessType access, String callbackLabel = null, Action<string, string> callback = null)
+        public override System.IO.Stream Open(AccessType access, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
-            if ( !IsOpen)
+            if (!IsOpen)
             {
-                this.Stream = File.Open( FullName, System.IO.FileMode.OpenOrCreate, access == AccessType.Read ? System.IO.FileAccess.Read : System.IO.FileAccess.Write );
-                callback?.Invoke( callbackLabel, $"File Stream [{FullName}] Has Been Opened." );
+                this.Stream = File.Open(FullName, System.IO.FileMode.OpenOrCreate, access == AccessType.Read ? System.IO.FileAccess.Read : System.IO.FileAccess.Write);
+                if (verbose)
+                    Logger.Log($"File Stream [{FullName}] Has Been Opened.", callbackLabel, callback);
             }
             else
-                callback?.Invoke( callbackLabel, $"File Stream [{FullName}] Is Already Open." );
+            {
+                if (verbose)
+                    Logger.Log($"File Stream [{FullName}] Is Already Open.", callbackLabel, callback);
+            }
             return this.Stream;
         }
 
@@ -69,15 +73,19 @@ namespace Zephyr.Filesystem
         /// </summary>
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
-        public override void Close(String callbackLabel = null, Action<string, string> callback = null)
+        public override void Close(bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             if (IsOpen)
             {
                 this.Stream.Close();
-                callback?.Invoke( callbackLabel, $"File Stream [{FullName}] Has Been Closed." );
+                if (verbose)
+                    Logger.Log($"File Stream [{FullName}] Has Been Closed.", callbackLabel, callback);
             }
             else
-                callback?.Invoke( callbackLabel, $"File Stream [{FullName}] Is Already Closed." );
+            {
+                if (verbose)
+                    Logger.Log($"File Stream [{FullName}] Is Already Closed.", callbackLabel, callback);
+            }
 
             this.Stream = null;
 
@@ -90,7 +98,7 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>An instance of a WindowsZephyrFile.</returns>
-        public override ZephyrFile Create(bool overwrite = true, String callbackLabel = null, Action<string, string> callback = null)
+        public override ZephyrFile Create(bool overwrite = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             try
             {
@@ -98,7 +106,8 @@ namespace Zephyr.Filesystem
                     throw new Exception($"File [{this.FullName}] Already Exists.");
 
                 this.Stream = File.Open(FullName, System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.Write);
-                callback?.Invoke(callbackLabel, $"File [{FullName}] Was Created.");
+                if (verbose)
+                    Logger.Log($"File [{FullName}] Was Created.", callbackLabel, callback);
                 return this;
             }
             catch (Exception e)
@@ -115,7 +124,7 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>A WindowsZephyrFile implementation.</returns>
-        public override ZephyrFile CreateFile(string fileName, String callbackLabel = null, Action<string, string> callback = null)
+        public override ZephyrFile CreateFile(string fileName, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             return new WindowsZephyrFile(fileName);
         }
@@ -127,7 +136,7 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>A WindowsZephyrDirectory implementation.</returns>
-        public override ZephyrDirectory CreateDirectory(string dirName, String callbackLabel = null, Action<string, string> callback = null)
+        public override ZephyrDirectory CreateDirectory(string dirName, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             return new WindowsZephyrDirectory(dirName);
         }

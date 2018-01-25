@@ -158,7 +158,7 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>An AmazonS3ZephyrFile implementation.</returns>
-        public override ZephyrFile CreateFile(string fullName, String callbackLabel = null, Action<string, string> callback = null)
+        public override ZephyrFile CreateFile(string fullName, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             return new AwsS3ZephyrFile(_client, fullName);
         }
@@ -170,7 +170,7 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>An AmazonS3ZephyrDirectory implementation.</returns>
-        public override ZephyrDirectory CreateDirectory(string fullName, String callbackLabel = null, Action<string, string> callback = null)
+        public override ZephyrDirectory CreateDirectory(string fullName, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             return new AwsS3ZephyrDirectory(_client, fullName);
         }

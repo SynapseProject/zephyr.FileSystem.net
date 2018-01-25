@@ -69,7 +69,7 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>An instance of a ZephyrFile implementation.</returns>
-        public abstract ZephyrFile Create(bool overwrite = true, String callbackLabel = null, Action<string, string> callback = null);
+        public abstract ZephyrFile Create(bool overwrite = true, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null);
 
         /// <summary>
         /// Deletes a ZephyrFile object.
@@ -87,7 +87,7 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>A ZephyrFile implementation.</returns>
-        public abstract ZephyrFile CreateFile(string fullName, String callbackLabel = null, Action<string, string> callback = null);
+        public abstract ZephyrFile CreateFile(string fullName, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null);
 
         /// <summary>
         /// Creates a ZephyrDirectory implementation of the same implementation type as the ZephyrFile calling it.
@@ -96,7 +96,7 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>A ZephyrDirectory implementation.</returns>
-        public abstract ZephyrDirectory CreateDirectory(string fullName, String callbackLabel = null, Action<string, string> callback = null);
+        public abstract ZephyrDirectory CreateDirectory(string fullName, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null);
 
         /// <summary>
         /// Opens the underlying Stream associated with the ZephyrFile implementation.
@@ -105,14 +105,14 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>The open Stream for the ZephyrFile.</returns>
-        public abstract Stream Open(AccessType access, String callbackLabel = null, Action<string, string> callback = null);
+        public abstract Stream Open(AccessType access, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null);
 
         /// <summary>
         /// Closes the underlying Steam associated with the ZephyrFile implementation.
         /// </summary>
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
-        public abstract void Close(String callbackLabel = null, Action<string, string> callback = null);
+        public abstract void Close(bool verbose = true, String callbackLabel = null, Action<string, string> callback = null);
 
         /// <summary>
         /// Method to copy the contents of the ZephyrFile into another ZephyrFile.  
@@ -241,12 +241,12 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns></returns>
-        public Stream Reopen(AccessType access, String callbackLabel = null, Action<string, string> callback = null)
+        public Stream Reopen(AccessType access, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             if (IsOpen)
-                Close(callbackLabel, callback);
+                Close(verbose, callbackLabel, callback);
 
-            return Open(access, callbackLabel, callback);
+            return Open(access, verbose, callbackLabel, callback);
         }
 
         /// <summary>
@@ -255,11 +255,11 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>An array of strings, one string for each line.</returns>
-        public string[] ReadAllLines(String callbackLabel = null, Action<string, string> callback = null)
+        public string[] ReadAllLines(bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             List<string> lines = new List<string>();
 
-            Reopen(AccessType.Read, callbackLabel, callback);
+            Reopen(AccessType.Read, verbose, callbackLabel, callback);
 
             using (StreamReader reader = new StreamReader(this.Stream))
             {
@@ -268,7 +268,7 @@ namespace Zephyr.Filesystem
                     lines.Add(line);
             }
 
-            Close(callbackLabel, callback);
+            Close(verbose, callbackLabel, callback);
 
             return lines.ToArray();
         }
@@ -279,14 +279,14 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>A string containing the entire text of the ZephyrFile.</returns>
-        public string ReadAllText(String callbackLabel = null, Action<string, string> callback = null)
+        public string ReadAllText(bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
             string text = null;
-            Reopen(AccessType.Read, callbackLabel, callback);
+            Reopen(AccessType.Read, verbose, callbackLabel, callback);
             StreamReader reader = new StreamReader(this.Stream);
             text = reader.ReadToEnd();
 
-            Close(callbackLabel, callback);
+            Close(verbose, callbackLabel, callback);
             return text;
         }
 
@@ -296,9 +296,9 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>A byte array containing the contents of the ZephyrFile.</returns>
-        public byte[] ReadAllBytes(String callbackLabel = null, Action<string, string> callback = null)
+        public byte[] ReadAllBytes(bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
-            Reopen(AccessType.Read, callbackLabel, callback);
+            Reopen(AccessType.Read, verbose, callbackLabel, callback);
 
             // Logic From : https://stackoverflow.com/questions/1080442/how-to-convert-an-stream-into-a-byte-in-c
             byte[] readBuffer = new byte[4096];
@@ -338,9 +338,9 @@ namespace Zephyr.Filesystem
         /// <param name="lines">A string array of lines to write.</param>
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
-        public void WriteAllLines(string[] lines, String callbackLabel = null, Action<string, string> callback = null)
+        public void WriteAllLines(string[] lines, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
-            Reopen(AccessType.Write, callbackLabel, callback);
+            Reopen(AccessType.Write, verbose, callbackLabel, callback);
 
             StreamWriter writer = new StreamWriter(this.Stream);
             foreach (string line in lines)
@@ -348,7 +348,7 @@ namespace Zephyr.Filesystem
 
             writer.Flush();
             writer.Close();
-            Close(callbackLabel, callback);
+            Close(verbose, callbackLabel, callback);
         }
 
         /// <summary>
@@ -357,15 +357,15 @@ namespace Zephyr.Filesystem
         /// <param name="text">The text to write.</param>
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
-        public void WriteAllText(string text, String callbackLabel = null, Action<string, string> callback = null)
+        public void WriteAllText(string text, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
-            Reopen(AccessType.Write, callbackLabel, callback);
+            Reopen(AccessType.Write, verbose, callbackLabel, callback);
 
             StreamWriter writer = new StreamWriter(this.Stream);
             writer.Write(text);
             writer.Flush();
             writer.Close();
-            Close(callbackLabel, callback);
+            Close(verbose, callbackLabel, callback);
         }
 
         /// <summary>
@@ -374,12 +374,12 @@ namespace Zephyr.Filesystem
         /// <param name="bytes">The bytes to write.</param>
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
-        public void WriteAllBytes(byte[] bytes, String callbackLabel = null, Action<string, string> callback = null)
+        public void WriteAllBytes(byte[] bytes, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
         {
-            Reopen(AccessType.Write, callbackLabel, callback);
+            Reopen(AccessType.Write, verbose, callbackLabel, callback);
             this.Stream.Write(bytes, 0, bytes.Length);
             this.Stream.Flush();
-            Close(callbackLabel, callback);
+            Close(verbose, callbackLabel, callback);
         }
     }
 }

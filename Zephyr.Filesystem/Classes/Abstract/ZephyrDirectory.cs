@@ -64,7 +64,7 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>A ZephyrFile implementation.</returns>
-        public abstract ZephyrFile CreateFile(string fullName, String callbackLabel = null, Action<string, string> callback = null);
+        public abstract ZephyrFile CreateFile(string fullName, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null);
 
         /// <summary>
         /// Creates a ZephyrDirectory implementation of the same implementation type as the ZephyrDirectory calling it.
@@ -73,7 +73,7 @@ namespace Zephyr.Filesystem
         /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
         /// <param name="callback">Optional method that is called for logging purposes.</param>
         /// <returns>A ZephyrDirectory implementation.</returns>
-        public abstract ZephyrDirectory CreateDirectory(string fullName, String callbackLabel = null, Action<string, string> callback = null);
+        public abstract ZephyrDirectory CreateDirectory(string fullName, bool verbose = true, String callbackLabel = null, Action<string, string> callback = null);
 
         /// <summary>
         /// Returns a list of all Directories which are direct children of the ZephyrDirectory.
@@ -133,7 +133,7 @@ namespace Zephyr.Filesystem
                     try
                     {
                         String targetFileName = target.PathCombine(target.FullName, file.Name);
-                        ZephyrFile targetFile = target.CreateFile(targetFileName, callbackLabel, callback);
+                        ZephyrFile targetFile = target.CreateFile(targetFileName, verbose, callbackLabel, callback);
                         file.CopyTo(targetFile, overwrite, true, stopOnError, verbose, callbackLabel, callback);
                     }
                     catch (Exception e)
