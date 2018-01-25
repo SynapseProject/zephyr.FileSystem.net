@@ -121,6 +121,43 @@ namespace Zephyr.Filesystem.Tests
             dir.Delete();
         }
 
+        [Test]
+        public void WindowsGetDirectoriesandGetFiles()
+        {
+            String path = Path.Combine(workingPath, $"{Global.RandomDirectory}\\");
+            Console.WriteLine(path);
+            ZephyrDirectory dir = workingDir.CreateDirectory(path);
+            dir.Create();
+            filesDir.CopyTo(dir, verbose: false);
+
+            List<ZephyrDirectory> dirs = (List<ZephyrDirectory>)(dir.GetDirectories());
+            Console.WriteLine($"Found [{dirs.Count}] Sub-directories.");
+            Assert.AreEqual(dirs.Count, 3);
+
+            List<ZephyrFile> files = (List<ZephyrFile>)(dir.GetFiles());
+            Console.WriteLine($"Found [{files.Count}] Files.");
+            Assert.AreEqual(files.Count, 5);
+
+            dir.Delete(verbose: false);
+        }
+
+        [Test]
+        public void WindowsPathCombine()
+        {
+            String path = Path.Combine(workingPath, $"{Global.RandomDirectory}\\");
+            Console.WriteLine(path);
+            ZephyrDirectory dir = workingDir.CreateDirectory(path);
+
+            string testpath = dir.PathCombine(dir.FullName, "michael\\", "j\\", "fox\\");
+            Console.WriteLine($"Test Path : {testpath}");
+            Assert.AreEqual(testpath, $"{dir.FullName}michael\\j\\fox\\");
+        }
+
+        //TODO : Implement Windows Version of CopyTo (different class perhaps)
+        //TODO : Implement Windows Version of MoveTo (different class perhaps)
+        //TODO : Implement Windows Version of IsEmpty
+        //TODO : Implement Windows Version of Purge
+
 
 
     }

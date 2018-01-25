@@ -116,7 +116,7 @@ namespace Zephyr.Filesystem
                     {
                         String targetChildDirName = target.PathCombine(target.FullName, $"{childDir.Name}/");
                         ZephyrDirectory targetChild = target.CreateDirectory(targetChildDirName);
-                        targetChild.Create();
+                        targetChild.Create(verbose: verbose);
                         if (recurse)
                             childDir.CopyTo(targetChild, recurse, overwrite, verbose, stopOnError, callbackLabel, callback);
                     }

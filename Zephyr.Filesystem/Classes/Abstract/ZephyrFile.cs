@@ -136,22 +136,22 @@ namespace Zephyr.Filesystem
                     throw new Exception($"File [{file.FullName}] Already Exists.");
 
                 String targetDirectory = file.FullName.Substring(0, file.FullName.LastIndexOf(file.Name));
-                ZephyrDirectory targetDir = file.CreateDirectory(targetDirectory);
+                ZephyrDirectory targetDir = file.CreateDirectory(targetDirectory, verbose);
                 if (!targetDir.Exists)
                 {
                     if (createMissingDirectories)
-                        targetDir.Create();
+                        targetDir.Create(verbose: verbose);
                     else
                         throw new Exception($"Directory [{targetDir.FullName}] Does Not Exist.");
                 }
 
-                Stream source = this.Open(AccessType.Read);
-                Stream target = file.Open(AccessType.Write);
+                Stream source = this.Open(AccessType.Read, verbose);
+                Stream target = file.Open(AccessType.Write, verbose);
 
                 source.CopyTo(target);
 
-                this.Close();
-                file.Close();
+                this.Close(verbose);
+                file.Close(verbose);
 
                 if (verbose)
                     Logger.Log($"Copied File [{this.FullName}] to [{file.FullName}].", callbackLabel, callback);
