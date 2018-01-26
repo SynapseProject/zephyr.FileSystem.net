@@ -53,7 +53,7 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsCreateDirectory()
+        public void WindowsDirectoryCreate()
         {
             String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomWindowsDirectory}\\");
             Console.WriteLine(path);
@@ -64,7 +64,7 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsDeleteDirectory()
+        public void WindowsDirectoryDelete()
         {
             String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomWindowsDirectory}\\");
             Console.WriteLine(path);
@@ -75,7 +75,7 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsCreateFileMethod()
+        public void WindowsDirectoryCreateFileMethod()
         {
             String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomWindowsFile}");
             Console.WriteLine(path);
@@ -87,7 +87,7 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsCreateDirectoryMethod()
+        public void WindowsDirectoryCreateDirectoryMethod()
         {
             String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomWindowsDirectory}\\");
             Console.WriteLine(path);
@@ -99,7 +99,7 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsGetDirectoriesandGetFiles()
+        public void WindowsDirectoryGetDirectoriesandGetFiles()
         {
             ZephyrDirectory dir = Global.StageTestFilesToWindows();
 
@@ -115,7 +115,7 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsPathCombine()
+        public void WindowsDirectoryPathCombine()
         {
             String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomWindowsDirectory}\\");
             Console.WriteLine(path);
@@ -127,7 +127,7 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsDirectoryCopyTo()
+        public void WindowsDirectoryCopyToWindowsDirectory()
         {
             ZephyrDirectory source = Global.StageTestFilesToWindows();
             Console.WriteLine($"Source : {source.FullName}");
@@ -152,7 +152,7 @@ namespace Zephyr.Filesystem.Tests
 
 
         [Test]
-        public void WindowsDirectoryMoveTo()
+        public void WindowsDirectoryMoveToWindowsDirectory()
         {
             ZephyrDirectory source = Global.StageTestFilesToWindows();
             Console.WriteLine($"Source : {source.FullName}");

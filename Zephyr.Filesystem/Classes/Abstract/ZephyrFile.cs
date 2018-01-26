@@ -329,6 +329,8 @@ namespace Zephyr.Filesystem
                 Buffer.BlockCopy(readBuffer, 0, buffer, 0, totalBytesRead);
             }
 
+            Close();
+
             return buffer;
         }
 
