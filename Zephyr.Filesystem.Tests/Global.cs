@@ -26,5 +26,20 @@ namespace Zephyr.Filesystem.Tests
         public void Teardown()
         {
         }
+
+        public static string DirectoryObjectCounts(ZephyrDirectory dir)
+        {
+            List<ZephyrDirectory> dirs = (List<ZephyrDirectory>)dir.GetDirectories();
+            List<ZephyrFile> files = (List<ZephyrFile>)dir.GetFiles();
+
+            //TODO: Sort Directories To Ensure Counts Come Back In Same Order
+
+            String counts = $"{dirs.Count},{files.Count}";
+
+            foreach (ZephyrDirectory childDir in dirs)
+                counts = $"{counts},{DirectoryObjectCounts(childDir)}";
+
+            return counts;
+        }
     }
 }

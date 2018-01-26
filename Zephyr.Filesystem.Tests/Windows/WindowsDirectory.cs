@@ -13,7 +13,7 @@ using Zephyr.Filesystem;
 namespace Zephyr.Filesystem.Tests
 {
     [TestFixture]
-    public class Windows
+    public class WindowsDirectory
     {
         // Environment Variables : Set the variables below to reflect your environment.
         String workspace = @"C:\Temp\";
@@ -153,11 +153,102 @@ namespace Zephyr.Filesystem.Tests
             Assert.AreEqual(testpath, $"{dir.FullName}michael\\j\\fox\\");
         }
 
-        //TODO : Implement Windows Version of CopyTo (different class perhaps)
-        //TODO : Implement Windows Version of MoveTo (different class perhaps)
-        //TODO : Implement Windows Version of IsEmpty
-        //TODO : Implement Windows Version of Purge
+        [Test]
+        public void WindowsDirectoryCopyTo()
+        {
+            String path = Path.Combine(workingPath, $"{Global.RandomDirectory}\\");
+            Console.WriteLine($"Source : {path}");
+            ZephyrDirectory source = workingDir.CreateDirectory(path);
+            source.Create();
+            filesDir.CopyTo(source, verbose: false);
 
+            path = Path.Combine(workingPath, $"{Global.RandomDirectory}\\");
+            Console.WriteLine($"Target : {path}");
+            ZephyrDirectory target = workingDir.CreateDirectory(path);
+            target.Create();
+
+            source.CopyTo(target);
+
+            String sourceCount = Global.DirectoryObjectCounts(source);
+            Console.WriteLine($">> Source : [{sourceCount}]");
+            String targetCount = Global.DirectoryObjectCounts(target);
+            Console.WriteLine($">> Target : [{targetCount}]");
+
+            Assert.AreEqual(sourceCount, targetCount);
+
+            target.Delete();
+            source.Delete();
+        }
+
+
+        [Test]
+        public void WindowsDirectoryMoveTo()
+        {
+            String path = Path.Combine(workingPath, $"{Global.RandomDirectory}\\");
+            Console.WriteLine($"Source : {path}");
+            ZephyrDirectory source = workingDir.CreateDirectory(path);
+            source.Create();
+            filesDir.CopyTo(source, verbose: false);
+
+            path = Path.Combine(workingPath, $"{Global.RandomDirectory}\\");
+            Console.WriteLine($"Target : {path}");
+            ZephyrDirectory target = workingDir.CreateDirectory(path);
+            target.Create();
+
+            String sourceCount = Global.DirectoryObjectCounts(source);
+            Console.WriteLine($">> Source : [{sourceCount}]");
+
+            source.MoveTo(target);
+
+            String targetCount = Global.DirectoryObjectCounts(target);
+            Console.WriteLine($">> Target : [{targetCount}]");
+
+            Assert.AreEqual(sourceCount, targetCount);
+            Assert.That(source.IsEmpty);
+
+            target.Delete();
+            source.Delete();
+        }
+
+        [Test]
+        public void WindowsDirectoryIsEmpty()
+        {
+            String path = Path.Combine(workingPath, $"{Global.RandomDirectory}\\");
+            Console.WriteLine($"{path}");
+            ZephyrDirectory dir = workingDir.CreateDirectory(path);
+            dir.Create();
+            Assert.That(dir.IsEmpty());
+
+            filesDir.CopyTo(dir, verbose: false);
+            Assert.That(!dir.IsEmpty());
+
+            dir.Delete();
+        }
+
+
+        [Test]
+        public void WindowsDirectoryPurge()
+        {
+            String path = Path.Combine(workingPath, $"{Global.RandomDirectory}\\");
+            Console.WriteLine($"{path}");
+            ZephyrDirectory dir = workingDir.CreateDirectory(path);
+            Assert.That(!dir.Exists);
+
+            dir.Create();
+            Assert.That(dir.Exists);
+            Assert.That(dir.IsEmpty());
+
+            filesDir.CopyTo(dir, verbose: false);
+            Assert.That(!dir.IsEmpty());
+
+            dir.Purge();
+            Assert.That(dir.Exists);
+            Assert.That(dir.IsEmpty());
+
+            dir.Delete();
+            dir = new WindowsZephyrDirectory(path);
+            Assert.That(!dir.Exists);
+        }
 
 
     }
