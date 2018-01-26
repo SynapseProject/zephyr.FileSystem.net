@@ -15,44 +15,21 @@ namespace Zephyr.Filesystem.Tests
     [TestFixture]
     public class WindowsDirectory
     {
-        // Environment Variables : Set the variables below to reflect your environment.
-        String workspace = @"C:\Temp\";
-
-        // Test Case Variables : These are set in the Setup() method
-        String workingPath = null;
-        String filesPath = null;
-        Clients clients = new Clients();
-        ZephyrDirectory workingDir = null;
-        ZephyrDirectory filesDir = null;
-
         [OneTimeSetUp]
         public void Setup()
         {
-            workingPath = Path.Combine(workspace, $"temp_{Global.RandomDirectory}\\");
-
-            // Get Path To The  Project's "TestFiles" Folder
-            String assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase);
-            UriBuilder uri = new UriBuilder(assemblyDir);
-            string path = Uri.UnescapeDataString(uri.Path);
-            DirectoryInfo dInfo = new DirectoryInfo(Path.GetDirectoryName(path));
-            filesPath = $"{dInfo.Parent.FullName}\\TestFiles\\";
-
-            // Get TestFiles Directory, Create Temporary Source and Target Directories
-            filesDir = Utilities.GetZephyrDirectory(filesPath, clients);
-            workingDir = Utilities.CreateDirectory(workingPath, clients);
         }
 
         [OneTimeTearDown]
         public void Teardown()
         {
-            Utilities.Delete(workingPath, clients);
         }
 
         [Test]
         public void WindowsDirectoryProperties()
         {
-            String dirName = Global.RandomDirectory;
-            String path = Path.Combine(workingPath, $"{dirName}\\");
+            String dirName = Global.RandomWindowsDirectory;
+            String path = Path.Combine(Global.WindowsWorkingPath, $"{dirName}\\");
             Console.WriteLine(path);
             ZephyrDirectory dir = new WindowsZephyrDirectory(path);
             dir.Create();
@@ -64,10 +41,10 @@ namespace Zephyr.Filesystem.Tests
             Assert.AreEqual(dir.Name, dirName);
 
             Console.WriteLine($"Parent   : {dir.Parent}");
-            Assert.AreEqual(dir.Parent, workingPath);
+            Assert.AreEqual(dir.Parent, Global.WindowsWorkingPath);
 
             Console.WriteLine($"Root     : {dir.Root}");
-            Assert.AreEqual(dir.Root, Directory.GetDirectoryRoot(workingPath));
+            Assert.AreEqual(dir.Root, Directory.GetDirectoryRoot(Global.WindowsWorkingPath));
 
             Console.WriteLine($"Exists   : {dir.Exists}");
             Assert.That(dir.Exists);
@@ -78,7 +55,7 @@ namespace Zephyr.Filesystem.Tests
         [Test]
         public void WindowsCreateDirectory()
         {
-            String path = Path.Combine(workingPath, $"{Global.RandomDirectory}\\");
+            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomWindowsDirectory}\\");
             Console.WriteLine(path);
             ZephyrDirectory dir = new WindowsZephyrDirectory(path);
             dir.Create();
@@ -89,20 +66,20 @@ namespace Zephyr.Filesystem.Tests
         [Test]
         public void WindowsDeleteDirectory()
         {
-            String path = Path.Combine(workingPath, $"{Global.RandomDirectory}\\");
+            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomWindowsDirectory}\\");
             Console.WriteLine(path);
             ZephyrDirectory dir = new WindowsZephyrDirectory(path);
             dir.Create();
             dir.Delete();
-            Assert.That(!Utilities.Exists(path, clients));
+            Assert.That(!Utilities.Exists(path, Global.Clients));
         }
 
         [Test]
         public void WindowsCreateFileMethod()
         {
-            String path = Path.Combine(workingPath, $"{Global.RandomFile}");
+            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomWindowsFile}");
             Console.WriteLine(path);
-            ZephyrFile file = workingDir.CreateFile(path);
+            ZephyrFile file = Global.WindowsWorkingDirectory.CreateFile(path);
             Assert.That(!file.Exists);
             file.Create();
             Assert.That(file.Exists);
@@ -112,9 +89,9 @@ namespace Zephyr.Filesystem.Tests
         [Test]
         public void WindowsCreateDirectoryMethod()
         {
-            String path = Path.Combine(workingPath, $"{Global.RandomDirectory}\\");
+            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomWindowsDirectory}\\");
             Console.WriteLine(path);
-            ZephyrDirectory dir = workingDir.CreateDirectory(path);
+            ZephyrDirectory dir = Global.WindowsWorkingDirectory.CreateDirectory(path);
             Assert.That(!dir.Exists);
             dir.Create();
             Assert.That(dir.Exists);
@@ -124,11 +101,7 @@ namespace Zephyr.Filesystem.Tests
         [Test]
         public void WindowsGetDirectoriesandGetFiles()
         {
-            String path = Path.Combine(workingPath, $"{Global.RandomDirectory}\\");
-            Console.WriteLine(path);
-            ZephyrDirectory dir = workingDir.CreateDirectory(path);
-            dir.Create();
-            filesDir.CopyTo(dir, verbose: false);
+            ZephyrDirectory dir = Global.StageTestFilesToWindows();
 
             List<ZephyrDirectory> dirs = (List<ZephyrDirectory>)(dir.GetDirectories());
             Console.WriteLine($"Found [{dirs.Count}] Sub-directories.");
@@ -144,9 +117,9 @@ namespace Zephyr.Filesystem.Tests
         [Test]
         public void WindowsPathCombine()
         {
-            String path = Path.Combine(workingPath, $"{Global.RandomDirectory}\\");
+            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomWindowsDirectory}\\");
             Console.WriteLine(path);
-            ZephyrDirectory dir = workingDir.CreateDirectory(path);
+            ZephyrDirectory dir = Global.WindowsWorkingDirectory.CreateDirectory(path);
 
             string testpath = dir.PathCombine(dir.FullName, "michael\\", "j\\", "fox\\");
             Console.WriteLine($"Test Path : {testpath}");
@@ -156,15 +129,12 @@ namespace Zephyr.Filesystem.Tests
         [Test]
         public void WindowsDirectoryCopyTo()
         {
-            String path = Path.Combine(workingPath, $"{Global.RandomDirectory}\\");
-            Console.WriteLine($"Source : {path}");
-            ZephyrDirectory source = workingDir.CreateDirectory(path);
-            source.Create();
-            filesDir.CopyTo(source, verbose: false);
+            ZephyrDirectory source = Global.StageTestFilesToWindows();
+            Console.WriteLine($"Source : {source.FullName}");
 
-            path = Path.Combine(workingPath, $"{Global.RandomDirectory}\\");
+            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomWindowsDirectory}\\");
             Console.WriteLine($"Target : {path}");
-            ZephyrDirectory target = workingDir.CreateDirectory(path);
+            ZephyrDirectory target = Global.WindowsWorkingDirectory.CreateDirectory(path);
             target.Create();
 
             source.CopyTo(target);
@@ -184,15 +154,12 @@ namespace Zephyr.Filesystem.Tests
         [Test]
         public void WindowsDirectoryMoveTo()
         {
-            String path = Path.Combine(workingPath, $"{Global.RandomDirectory}\\");
-            Console.WriteLine($"Source : {path}");
-            ZephyrDirectory source = workingDir.CreateDirectory(path);
-            source.Create();
-            filesDir.CopyTo(source, verbose: false);
+            ZephyrDirectory source = Global.StageTestFilesToWindows();
+            Console.WriteLine($"Source : {source.FullName}");
 
-            path = Path.Combine(workingPath, $"{Global.RandomDirectory}\\");
+            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomWindowsDirectory}\\");
             Console.WriteLine($"Target : {path}");
-            ZephyrDirectory target = workingDir.CreateDirectory(path);
+            ZephyrDirectory target = Global.WindowsWorkingDirectory.CreateDirectory(path);
             target.Create();
 
             String sourceCount = Global.DirectoryObjectCounts(source);
@@ -213,13 +180,13 @@ namespace Zephyr.Filesystem.Tests
         [Test]
         public void WindowsDirectoryIsEmpty()
         {
-            String path = Path.Combine(workingPath, $"{Global.RandomDirectory}\\");
+            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomWindowsDirectory}\\");
             Console.WriteLine($"{path}");
-            ZephyrDirectory dir = workingDir.CreateDirectory(path);
+            ZephyrDirectory dir = Global.WindowsWorkingDirectory.CreateDirectory(path);
             dir.Create();
             Assert.That(dir.IsEmpty());
 
-            filesDir.CopyTo(dir, verbose: false);
+            Global.TestFilesDirectory.CopyTo(dir, verbose: false);
             Assert.That(!dir.IsEmpty());
 
             dir.Delete();
@@ -229,16 +196,7 @@ namespace Zephyr.Filesystem.Tests
         [Test]
         public void WindowsDirectoryPurge()
         {
-            String path = Path.Combine(workingPath, $"{Global.RandomDirectory}\\");
-            Console.WriteLine($"{path}");
-            ZephyrDirectory dir = workingDir.CreateDirectory(path);
-            Assert.That(!dir.Exists);
-
-            dir.Create();
-            Assert.That(dir.Exists);
-            Assert.That(dir.IsEmpty());
-
-            filesDir.CopyTo(dir, verbose: false);
+            ZephyrDirectory dir = Global.StageTestFilesToWindows();
             Assert.That(!dir.IsEmpty());
 
             dir.Purge();
@@ -246,8 +204,6 @@ namespace Zephyr.Filesystem.Tests
             Assert.That(dir.IsEmpty());
 
             dir.Delete();
-            dir = new WindowsZephyrDirectory(path);
-            Assert.That(!dir.Exists);
         }
 
 
