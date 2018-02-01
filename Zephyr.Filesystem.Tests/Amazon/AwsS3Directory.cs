@@ -26,6 +26,9 @@ namespace Zephyr.Filesystem.Tests
         [Test]
         public void AwsS3DirectoryProperties()
         {
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
+
             String dirName = Global.RandomDirectory;
             String path = $"{Global.AwsS3WorkingPath}{dirName}/";
             Console.WriteLine(path);
@@ -53,6 +56,9 @@ namespace Zephyr.Filesystem.Tests
         [Test]
         public void AwsS3DirectoryCreate()
         {
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
+
             String path = $"{Global.AwsS3WorkingPath}{Global.RandomDirectory}/";
             Console.WriteLine(path);
             ZephyrDirectory dir = new AwsS3ZephyrDirectory(Global.Clients.aws, path);
@@ -64,6 +70,9 @@ namespace Zephyr.Filesystem.Tests
         [Test]
         public void AwsS3DirectoryDelete()
         {
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
+
             String path = $"{Global.AwsS3WorkingPath}{Global.RandomDirectory}/";
             Console.WriteLine(path);
             ZephyrDirectory dir = new AwsS3ZephyrDirectory(Global.Clients.aws, path);
@@ -76,6 +85,9 @@ namespace Zephyr.Filesystem.Tests
         [Test]
         public void AwsS3DirectoryCreateFileMethod()
         {
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
+
             String path = $"{Global.AwsS3WorkingPath}{Global.RandomFile}";
             Console.WriteLine(path);
             ZephyrFile file = Global.AwsS3WorkingDirectory.CreateFile(path);
@@ -88,6 +100,9 @@ namespace Zephyr.Filesystem.Tests
         [Test]
         public void AwsS3DirectoryCreateDirectoryMethod()
         {
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
+
             String path = $"{Global.AwsS3WorkingPath}{Global.RandomDirectory}/";
             Console.WriteLine(path);
             ZephyrDirectory dir = Global.AwsS3WorkingDirectory.CreateDirectory(path);
@@ -100,6 +115,9 @@ namespace Zephyr.Filesystem.Tests
         [Test]
         public void AwsS3DirectoryGetDirectoriesandGetFiles()
         {
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
+
             ZephyrDirectory dir = Global.StageTestFilesToAws();
 
             List<ZephyrDirectory> dirs = (List<ZephyrDirectory>)(dir.GetDirectories());
@@ -116,6 +134,9 @@ namespace Zephyr.Filesystem.Tests
         [Test]
         public void AwsS3DirectoryPathCombine()
         {
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
+
             String path = $"{Global.AwsS3WorkingPath}{Global.RandomDirectory}/";
             Console.WriteLine(path);
             ZephyrDirectory dir = Global.AwsS3WorkingDirectory.CreateDirectory(path);
@@ -128,6 +149,9 @@ namespace Zephyr.Filesystem.Tests
         [Test]
         public void AwsS3DirectoryCopyToAwsS3Directory()
         {
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
+
             ZephyrDirectory source = Global.StageTestFilesToAws();
             Console.WriteLine($"Source : {source.FullName}");
 
@@ -153,6 +177,9 @@ namespace Zephyr.Filesystem.Tests
         [Test]
         public void AwsS3DirectoryMoveToWindowsDirectory()
         {
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
+
             ZephyrDirectory source = Global.StageTestFilesToAws();
             Console.WriteLine($"Source : {source.FullName}");
 
@@ -179,6 +206,9 @@ namespace Zephyr.Filesystem.Tests
         [Test]
         public void AwsS3DirectoryIsEmpty()
         {
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
+
             String path = $"{Global.AwsS3WorkingPath}{Global.RandomDirectory}/";
             Console.WriteLine($"{path}");
             ZephyrDirectory dir = Global.AwsS3WorkingDirectory.CreateDirectory(path);
@@ -194,6 +224,9 @@ namespace Zephyr.Filesystem.Tests
         [Test]
         public void AwsS3DirectoryPurge()
         {
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
+
             ZephyrDirectory dir = Global.StageTestFilesToAws();
             Assert.IsFalse(dir.IsEmpty);
 

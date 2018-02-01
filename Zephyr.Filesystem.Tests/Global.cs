@@ -22,10 +22,10 @@ namespace Zephyr.Filesystem.Tests
         // TODO : Set Working Directories.  Directories MUST end in a slash ('/' or '\').
         public static bool TestWindows = true;
         public static String WindowsWorkspace = @"C:\Temp\";
-        public static String AwsS3Workspace = @"s3://mubucket/UnitTests/";
+        public static String AwsS3Workspace = @"s3://mybucket/UnitTests/";
 
         // TODO : Set Amazon S3 Connection Variables.
-        public static bool TestAws = true;
+        public static bool TestAws = false;
         public static RegionEndpoint AwsS3Region = RegionEndpoint.USEast1;
         public static string AwsS3AccessKey = null;
         public static string AwsS3SecretKey = null;
