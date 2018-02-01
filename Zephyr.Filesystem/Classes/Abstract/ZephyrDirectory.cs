@@ -39,6 +39,14 @@ namespace Zephyr.Filesystem
         public abstract bool Exists { get; }
 
         /// <summary>
+        /// Is the ZephyrDirectory Implementation empty.
+        /// </summary>
+        /// <returns>Returns true if the ZephyrDirectory contains no Directories or Files.</returns>
+        public bool IsEmpty { get { return (GetDirectories().Count() == 0 && GetFiles().Count() == 0); } }
+
+
+
+        /// <summary>
         /// Creates a ZephyrDirectory object.
         /// </summary>
         /// <param name="failIfExists">Throws an error if the directory already exists.</param>
@@ -215,15 +223,6 @@ namespace Zephyr.Filesystem
                 if (stopOnError)
                     throw new Exception(message);
             }
-        }
-
-        /// <summary>
-        /// Method to determine if a ZephyrDirectory Implementation is empty.
-        /// </summary>
-        /// <returns>Returns true if the ZephyrDirectory contains no Directories or Files.</returns>
-        public bool IsEmpty()
-        {
-            return (GetDirectories().Count() == 0 && GetFiles().Count() == 0);
         }
 
         /// <summary>

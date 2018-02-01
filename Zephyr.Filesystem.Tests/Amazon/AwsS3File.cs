@@ -2,27 +2,24 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Alphaleonis.Win32.Filesystem;
-
 
 using NUnit.Framework;
 
 namespace Zephyr.Filesystem.Tests
 {
     [TestFixture]
-    public class WindowsFile
+    public class AwsS3File
     {
         [Test]
-        public void WindowsFileProperties()
+        public void AwsS3FileProperties()
         {
-            if (!Global.TestWindows)
-                throw new Exception("Windows Tests Are Not Enabled.  Set Global.TestWindows To True To Enable.");
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
 
             String fileName = Global.RandomFile;
-            String path = Path.Combine(Global.WindowsWorkingPath, $"{fileName}");
+            String path = $"{Global.AwsS3WorkingPath}/{fileName}";
             Console.WriteLine(path);
-            ZephyrFile file = new WindowsZephyrFile(path);
+            ZephyrFile file = new AwsS3ZephyrFile(Global.Clients.aws, path);
             file.Create();
             file.Close();
             file.Open(AccessType.Write);
@@ -53,14 +50,14 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsFileCreate()
+        public void AwsS3FileCreate()
         {
-            if (!Global.TestWindows)
-                throw new Exception("Windows Tests Are Not Enabled.  Set Global.TestWindows To True To Enable.");
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
 
-            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomFile}");
+            String path = $"{Global.AwsS3WorkingPath}{Global.RandomFile}";
             Console.WriteLine(path);
-            ZephyrFile file = new WindowsZephyrFile(path);
+            ZephyrFile file = new AwsS3ZephyrFile(Global.Clients.aws, path);
             file.Create();
             file.Close();
             Assert.That(Utilities.Exists(path, Global.Clients));
@@ -68,14 +65,14 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsFileDelete()
+        public void AwsS3FileDelete()
         {
-            if (!Global.TestWindows)
-                throw new Exception("Windows Tests Are Not Enabled.  Set Global.TestWindows To True To Enable.");
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
 
-            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomFile}");
+            String path = $"{Global.AwsS3WorkingPath}{Global.RandomFile}";
             Console.WriteLine(path);
-            ZephyrFile file = new WindowsZephyrFile(path);
+            ZephyrFile file = new AwsS3ZephyrFile(Global.Clients.aws, path);
             file.Create();
             file.Close();
             file.Delete();
@@ -83,16 +80,16 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsFileCreateFileMethod()
+        public void AwsS3FileCreateFileMethod()
         {
-            if (!Global.TestWindows)
-                throw new Exception("Windows Tests Are Not Enabled.  Set Global.TestWindows To True To Enable.");
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
 
-            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomFile}");
+            String path = $"{Global.AwsS3WorkingPath}{Global.RandomFile}";
             Console.WriteLine(path);
-            ZephyrFile file = new WindowsZephyrFile(path);
+            ZephyrFile file = new AwsS3ZephyrFile(Global.Clients.aws, path);
 
-            ZephyrFile newFile = Global.WindowsWorkingDirectory.CreateFile(path);
+            ZephyrFile newFile = Global.AwsS3WorkingDirectory.CreateFile(path);
             Assert.That(!newFile.Exists);
             newFile.Create();
             newFile.Close();
@@ -102,16 +99,16 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsFileCreateDirectoryMethod()
+        public void AwsS3FileCreateDirectoryMethod()
         {
-            if (!Global.TestWindows)
-                throw new Exception("Windows Tests Are Not Enabled.  Set Global.TestWindows To True To Enable.");
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
 
-            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomFile}");
+            String path = $"{Global.AwsS3WorkingPath}{Global.RandomFile}";
             Console.WriteLine(path);
-            ZephyrFile file = new WindowsZephyrFile(path);
+            ZephyrFile file = new AwsS3ZephyrFile(Global.Clients.aws, path);
 
-            ZephyrDirectory dir = Global.WindowsWorkingDirectory.CreateDirectory(path);
+            ZephyrDirectory dir = Global.AwsS3WorkingDirectory.CreateDirectory(path);
             Assert.That(!dir.Exists);
             dir.Create();
             Assert.That(dir.Exists);
@@ -120,14 +117,14 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsFileOpen()
+        public void AwsS3FileOpen()
         {
-            if (!Global.TestWindows)
-                throw new Exception("Windows Tests Are Not Enabled.  Set Global.TestWindows To True To Enable.");
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
 
-            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomFile}");
+            String path = $"{Global.AwsS3WorkingPath}{Global.RandomFile}";
             Console.WriteLine(path);
-            ZephyrFile file = new WindowsZephyrFile(path);
+            ZephyrFile file = new AwsS3ZephyrFile(Global.Clients.aws, path);
 
             System.IO.Stream stream = file.Open(AccessType.Write);
             Assert.That(stream.CanWrite);
@@ -137,14 +134,14 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsFileClose()
+        public void AwsS3FileClose()
         {
-            if (!Global.TestWindows)
-                throw new Exception("Windows Tests Are Not Enabled.  Set Global.TestWindows To True To Enable.");
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
 
-            String path = Path.Combine(Global.WindowsWorkingPath, Global.RandomFile);
+            String path = $"{Global.AwsS3WorkingPath}{Global.RandomFile}";
             Console.WriteLine(path);
-            ZephyrFile file = new WindowsZephyrFile(path);
+            ZephyrFile file = new AwsS3ZephyrFile(Global.Clients.aws, path);
 
             file.Open(AccessType.Write);
             Assert.That(file.Stream.CanWrite);
@@ -154,21 +151,21 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsFileCopyToWindowsFile()
+        public void AwsS3FileCopyToAwsS3File()
         {
-            if (!Global.TestWindows)
-                throw new Exception("Windows Tests Are Not Enabled.  Set Global.TestWindows To True To Enable.");
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
 
-            ZephyrDirectory source = Global.StageTestFilesToWindows();
+            ZephyrDirectory source = Global.StageTestFilesToAws();
 
             List<ZephyrFile> files = (List<ZephyrFile>)source.GetFiles();
             Assert.IsNotEmpty(files);
             foreach (ZephyrFile file in files)
             {
-                String path = Path.Combine(Global.WindowsWorkingPath, Global.RandomFile);
-                ZephyrFile dest = new WindowsZephyrFile(path);
+                String path = $"{Global.AwsS3WorkingPath}{Global.RandomFile}";
+                ZephyrFile dest = new AwsS3ZephyrFile(Global.Clients.aws, path);
                 file.CopyTo(dest);
-                Assert.That(File.Exists(path));
+                Assert.That(Utilities.Exists(path, Global.Clients));
                 dest.Delete();
             }
 
@@ -176,22 +173,22 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsFileCopyToWindowsDirectory()
+        public void AwsS3FileCopyToAwsS3Directory()
         {
-            if (!Global.TestWindows)
-                throw new Exception("Windows Tests Are Not Enabled.  Set Global.TestWindows To True To Enable.");
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
 
-            ZephyrDirectory source = Global.StageTestFilesToWindows();
-            string path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomDirectory}\\");
-            ZephyrDirectory target = new WindowsZephyrDirectory(path);
+            ZephyrDirectory source = Global.StageTestFilesToAws();
+            string path = $"{Global.AwsS3WorkingPath}{Global.RandomDirectory}/";
+            ZephyrDirectory target = new AwsS3ZephyrDirectory(Global.Clients.aws, path);
 
             List<ZephyrFile> files = (List<ZephyrFile>)source.GetFiles();
             Assert.IsNotEmpty(files);
             foreach (ZephyrFile file in files)
             {
-                String filePath = Path.Combine(target.FullName, file.Name);
+                String filePath = $"{target.FullName}{file.Name}";
                 file.CopyTo(target);
-                Assert.That(File.Exists(filePath));
+                Assert.That(Utilities.Exists(filePath, Global.Clients));
                 Utilities.Delete(filePath, Global.Clients);
             }
 
@@ -199,21 +196,21 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsFileMoveToWindowsFile()
+        public void AwsS3FileMoveToAwsS3File()
         {
-            if (!Global.TestWindows)
-                throw new Exception("Windows Tests Are Not Enabled.  Set Global.TestWindows To True To Enable.");
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
 
-            ZephyrDirectory source = Global.StageTestFilesToWindows();
+            ZephyrDirectory source = Global.StageTestFilesToAws();
 
             List<ZephyrFile> files = (List<ZephyrFile>)source.GetFiles();
             Assert.IsNotEmpty(files);
             foreach (ZephyrFile file in files)
             {
-                String path = Path.Combine(Global.WindowsWorkingPath, Global.RandomFile);
-                ZephyrFile dest = new WindowsZephyrFile(path);
+                String path = $"{Global.AwsS3WorkingPath}{Global.RandomFile}";
+                ZephyrFile dest = new AwsS3ZephyrFile(Global.Clients.aws, path);
                 file.MoveTo(dest);
-                Assert.That(File.Exists(path));
+                Assert.That(Utilities.Exists(path, Global.Clients));
                 Assert.That(!file.Exists);
                 dest.Delete();
             }
@@ -222,22 +219,22 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsFileMoveToWindowsDirectory()
+        public void AwsS3FileMoveToAwsS3Directory()
         {
-            if (!Global.TestWindows)
-                throw new Exception("Windows Tests Are Not Enabled.  Set Global.TestWindows To True To Enable.");
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
 
-            ZephyrDirectory source = Global.StageTestFilesToWindows();
-            string path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomDirectory}\\");
-            ZephyrDirectory target = new WindowsZephyrDirectory(path);
+            ZephyrDirectory source = Global.StageTestFilesToAws();
+            string path = $"{Global.AwsS3WorkingPath}{Global.RandomDirectory}/";
+            ZephyrDirectory target = new AwsS3ZephyrDirectory(Global.Clients.aws, path);
 
             List<ZephyrFile> files = (List<ZephyrFile>)source.GetFiles();
             Assert.IsNotEmpty(files);
             foreach (ZephyrFile file in files)
             {
-                String filePath = Path.Combine(target.FullName, file.Name);
+                String filePath = $"{target.FullName}{file.Name}";
                 file.MoveTo(target);
-                Assert.That(File.Exists(filePath));
+                Assert.That(Utilities.Exists(filePath, Global.Clients));
                 Assert.That(!file.Exists);
                 Utilities.Delete(filePath, Global.Clients);
             }
@@ -246,34 +243,34 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsFileReopen()
+        public void AwsS3FileReopen()
         {
-            if (!Global.TestWindows)
-                throw new Exception("Windows Tests Are Not Enabled.  Set Global.TestWindows To True To Enable.");
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
 
-            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomFile}");
+            String path = $"{Global.AwsS3WorkingPath}{Global.RandomFile}";
             Console.WriteLine(path);
-            ZephyrFile file = new WindowsZephyrFile(path);
+            ZephyrFile file = new AwsS3ZephyrFile(Global.Clients.aws, path);
 
             System.IO.Stream stream = file.Open(AccessType.Read);
-            Assert.That(stream.CanRead);
-            Assert.That(!stream.CanWrite);
+            Assert.IsTrue(stream.CanRead);
+            Assert.IsFalse(stream.CanWrite);
 
             stream = file.Reopen(AccessType.Write);
-            Assert.That(!stream.CanRead);
-            Assert.That(stream.CanWrite);
+            Assert.IsFalse(stream.CanRead);
+            Assert.IsTrue(stream.CanWrite);
 
             file.Close();
             file.Delete();
         }
 
         [Test]
-        public void WindowsFileReadAllLines()
+        public void AwsS3FileReadAllLines()
         {
-            if (!Global.TestWindows)
-                throw new Exception("Windows Tests Are Not Enabled.  Set Global.TestWindows To True To Enable.");
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
 
-            ZephyrDirectory source = Global.StageTestFilesToWindows();
+            ZephyrDirectory source = Global.StageTestFilesToAws();
             List<ZephyrFile> files = (List<ZephyrFile>)source.GetFiles();
             Assert.IsNotEmpty(files);
             foreach (ZephyrFile file in files)
@@ -289,12 +286,12 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsFileReadAllText()
+        public void AwsS3FileReadAllText()
         {
-            if (!Global.TestWindows)
-                throw new Exception("Windows Tests Are Not Enabled.  Set Global.TestWindows To True To Enable.");
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
 
-            ZephyrDirectory source = Global.StageTestFilesToWindows();
+            ZephyrDirectory source = Global.StageTestFilesToAws();
             List<ZephyrFile> files = (List<ZephyrFile>)source.GetFiles();
             Assert.IsNotEmpty(files);
             foreach (ZephyrFile file in files)
@@ -309,12 +306,12 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsFileReadAllBytes()
+        public void AwsS3FileReadAllBytes()
         {
-            if (!Global.TestWindows)
-                throw new Exception("Windows Tests Are Not Enabled.  Set Global.TestWindows To True To Enable.");
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
 
-            ZephyrDirectory source = Global.StageTestFilesToWindows();
+            ZephyrDirectory source = Global.StageTestFilesToAws();
             List<ZephyrFile> files = (List<ZephyrFile>)source.GetFiles();
             Assert.IsNotEmpty(files);
             foreach (ZephyrFile file in files)
@@ -330,19 +327,19 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsFileWriteAllLines()
+        public void AwsS3FileWriteAllLines()
         {
-            if (!Global.TestWindows)
-                throw new Exception("Windows Tests Are Not Enabled.  Set Global.TestWindows To True To Enable.");
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
 
-            ZephyrDirectory source = Global.StageTestFilesToWindows();
+            ZephyrDirectory source = Global.StageTestFilesToAws();
             List<ZephyrFile> files = (List<ZephyrFile>)source.GetFiles();
             Assert.IsNotEmpty(files);
             foreach (ZephyrFile file in files)
             {
                 Console.WriteLine($"File: {file.FullName}");
                 string[] lines = file.ReadAllLines();
-                string outPath = Path.Combine(source.FullName, Global.RandomFile);
+                string outPath = $"{source.FullName}{Global.RandomFile}";
                 ZephyrFile outFile = source.CreateFile(outPath);
                 outFile.WriteAllLines(lines);
                 string[] outLines = outFile.ReadAllLines();
@@ -357,19 +354,19 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsFileWriteAllText()
+        public void AwsS3FileWriteAllText()
         {
-            if (!Global.TestWindows)
-                throw new Exception("Windows Tests Are Not Enabled.  Set Global.TestWindows To True To Enable.");
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
 
-            ZephyrDirectory source = Global.StageTestFilesToWindows();
+            ZephyrDirectory source = Global.StageTestFilesToAws();
             List<ZephyrFile> files = (List<ZephyrFile>)source.GetFiles();
             Assert.IsNotEmpty(files);
             foreach (ZephyrFile file in files)
             {
                 Console.WriteLine($"File: {file.FullName}");
                 string content = file.ReadAllText();
-                string outPath = Path.Combine(source.FullName, Global.RandomFile);
+                string outPath = $"{source.FullName}{Global.RandomFile}";
                 ZephyrFile outFile = source.CreateFile(outPath);
                 outFile.WriteAllText(content);
                 string outText = outFile.ReadAllText();
@@ -382,19 +379,19 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsFileWriteAllBytes()
+        public void AwsS3FileWriteAllBytes()
         {
-            if (!Global.TestWindows)
-                throw new Exception("Windows Tests Are Not Enabled.  Set Global.TestWindows To True To Enable.");
+            if (!Global.TestAws)
+                throw new Exception("Amazon S3 Tests Are Not Enabled.  Set Global.TestAws To True To Enable.");
 
-            ZephyrDirectory source = Global.StageTestFilesToWindows();
+            ZephyrDirectory source = Global.StageTestFilesToAws();
             List<ZephyrFile> files = (List<ZephyrFile>)source.GetFiles();
             Assert.IsNotEmpty(files);
             foreach (ZephyrFile file in files)
             {
                 Console.WriteLine($"File: {file.FullName}");
                 byte[] bytes = file.ReadAllBytes();
-                string outPath = Path.Combine(source.FullName, Global.RandomFile);
+                string outPath = $"{source.FullName}{Global.RandomFile}";
                 ZephyrFile outFile = source.CreateFile(outPath);
                 outFile.WriteAllBytes(bytes);
                 byte[] outBytes = outFile.ReadAllBytes();

@@ -101,19 +101,26 @@ namespace Zephyr.Filesystem
         /// <returns>The open Stream for the AmazonS3ZephyrFile.</returns>
         public override System.IO.Stream Open(AccessType access, bool verbose = true, string callbackLabel = null, Action<string, string> callback = null)
         {
-            if ( !IsOpen )
+            if (!Exists)
+            {
+                Create(verbose: false);
+                Close(false);
+            }
+
+            if (!IsOpen)
             {
                 if (_client == null)
                     throw new Exception($"AWSClient Not Set.");
 
-                S3FileInfo file = new S3FileInfo( _client.Client, BucketName, ObjectKey );
-                if ( access == AccessType.Read )
+                S3FileInfo file = new S3FileInfo(_client.Client, BucketName, ObjectKey);
+                if (access == AccessType.Read)
                     this.Stream = file.OpenRead();
-                else if ( access == AccessType.Write )
+                else if (access == AccessType.Write)
                     this.Stream = file.OpenWrite();
                 else
-                    throw new Exception( $"Unknown AccessType [{access}] Received." );
+                    throw new Exception($"Unknown AccessType [{access}] Received.");
             }
+
             return this.Stream;
         }
 
@@ -150,6 +157,9 @@ namespace Zephyr.Filesystem
 
                 S3FileInfo fileInfo = new S3FileInfo(_client.Client, BucketName, ObjectKey);
                 this.Stream = fileInfo.Create();
+                // File isn't written to S3 Bucket Until The Stream Is Closed.  Force Write By Closing Stream.
+                this.Close(false);
+                this.Open(AccessType.Write, false);
                 if (verbose)
                     Logger.Log($"File [{FullName}] Was Created.", callbackLabel, callback);
                 return this;

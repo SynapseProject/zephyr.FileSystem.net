@@ -3,17 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-//using System.IO;
 using System.Reflection;
 using NUnit.Framework;
-using Alphaleonis.Win32.Filesystem;
 
-using Zephyr.Filesystem;
+using Alphaleonis.Win32.Filesystem;
 
 namespace Zephyr.Filesystem.Tests
 {
     [TestFixture]
-    public class WindowsDirectory
+    public class AwsS3Directory
     {
         [OneTimeSetUp]
         public void Setup()
@@ -26,12 +24,12 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsDirectoryProperties()
+        public void AwsS3DirectoryProperties()
         {
             String dirName = Global.RandomDirectory;
-            String path = Path.Combine(Global.WindowsWorkingPath, $"{dirName}\\");
+            String path = $"{Global.AwsS3WorkingPath}{dirName}/";
             Console.WriteLine(path);
-            ZephyrDirectory dir = new WindowsZephyrDirectory(path);
+            ZephyrDirectory dir = new AwsS3ZephyrDirectory(Global.Clients.aws, path);
             dir.Create();
 
             Console.WriteLine($"FullName : {dir.FullName}");
@@ -41,10 +39,10 @@ namespace Zephyr.Filesystem.Tests
             Assert.AreEqual(dir.Name, dirName);
 
             Console.WriteLine($"Parent   : {dir.Parent}");
-            Assert.AreEqual(dir.Parent, Global.WindowsWorkingPath);
+            Assert.AreEqual(dir.Parent, Global.AwsS3WorkingPath);
 
             Console.WriteLine($"Root     : {dir.Root}");
-            Assert.AreEqual(dir.Root, Directory.GetDirectoryRoot(Global.WindowsWorkingPath));
+            Assert.AreEqual(dir.Root, Global.AwsS3WorkingDirectory.Root);
 
             Console.WriteLine($"Exists   : {dir.Exists}");
             Assert.That(dir.Exists);
@@ -53,55 +51,56 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsDirectoryCreate()
+        public void AwsS3DirectoryCreate()
         {
-            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomDirectory}\\");
+            String path = $"{Global.AwsS3WorkingPath}{Global.RandomDirectory}/";
             Console.WriteLine(path);
-            ZephyrDirectory dir = new WindowsZephyrDirectory(path);
+            ZephyrDirectory dir = new AwsS3ZephyrDirectory(Global.Clients.aws, path);
             dir.Create();
-            Assert.That(Utilities.Exists(path));
+            Assert.IsTrue(Utilities.Exists(path, Global.Clients));
             dir.Delete();
         }
 
         [Test]
-        public void WindowsDirectoryDelete()
+        public void AwsS3DirectoryDelete()
         {
-            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomDirectory}\\");
+            String path = $"{Global.AwsS3WorkingPath}{Global.RandomDirectory}/";
             Console.WriteLine(path);
-            ZephyrDirectory dir = new WindowsZephyrDirectory(path);
+            ZephyrDirectory dir = new AwsS3ZephyrDirectory(Global.Clients.aws, path);
             dir.Create();
+            Assert.IsTrue(Utilities.Exists(path, Global.Clients));
             dir.Delete();
-            Assert.That(!Utilities.Exists(path, Global.Clients));
+            Assert.IsFalse(Utilities.Exists(path, Global.Clients));
         }
 
         [Test]
-        public void WindowsDirectoryCreateFileMethod()
+        public void AwsS3DirectoryCreateFileMethod()
         {
-            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomFile}");
+            String path = $"{Global.AwsS3WorkingPath}{Global.RandomFile}";
             Console.WriteLine(path);
-            ZephyrFile file = Global.WindowsWorkingDirectory.CreateFile(path);
-            Assert.That(!file.Exists);
+            ZephyrFile file = Global.AwsS3WorkingDirectory.CreateFile(path);
+            Assert.IsFalse(file.Exists);
             file.Create();
-            Assert.That(file.Exists);
+            Assert.IsTrue(file.Exists);
             file.Delete();
         }
 
         [Test]
-        public void WindowsDirectoryCreateDirectoryMethod()
+        public void AwsS3DirectoryCreateDirectoryMethod()
         {
-            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomDirectory}\\");
+            String path = $"{Global.AwsS3WorkingPath}{Global.RandomDirectory}/";
             Console.WriteLine(path);
-            ZephyrDirectory dir = Global.WindowsWorkingDirectory.CreateDirectory(path);
-            Assert.That(!dir.Exists);
+            ZephyrDirectory dir = Global.AwsS3WorkingDirectory.CreateDirectory(path);
+            Assert.IsFalse(dir.Exists);
             dir.Create();
-            Assert.That(dir.Exists);
+            Assert.IsTrue(dir.Exists);
             dir.Delete();
         }
 
         [Test]
-        public void WindowsDirectoryGetDirectoriesandGetFiles()
+        public void AwsS3DirectoryGetDirectoriesandGetFiles()
         {
-            ZephyrDirectory dir = Global.StageTestFilesToWindows();
+            ZephyrDirectory dir = Global.StageTestFilesToAws();
 
             List<ZephyrDirectory> dirs = (List<ZephyrDirectory>)(dir.GetDirectories());
             Console.WriteLine($"Found [{dirs.Count}] Sub-directories.");
@@ -115,26 +114,26 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsDirectoryPathCombine()
+        public void AwsS3DirectoryPathCombine()
         {
-            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomDirectory}\\");
+            String path = $"{Global.AwsS3WorkingPath}{Global.RandomDirectory}/";
             Console.WriteLine(path);
-            ZephyrDirectory dir = Global.WindowsWorkingDirectory.CreateDirectory(path);
+            ZephyrDirectory dir = Global.AwsS3WorkingDirectory.CreateDirectory(path);
 
-            string testpath = dir.PathCombine(dir.FullName, "michael\\", "j\\", "fox\\");
+            string testpath = dir.PathCombine(dir.FullName, "michael/", "j/", "fox/");
             Console.WriteLine($"Test Path : {testpath}");
-            Assert.AreEqual(testpath, $"{dir.FullName}michael\\j\\fox\\");
+            Assert.AreEqual(testpath, $"{dir.FullName}michael/j/fox/");
         }
 
         [Test]
-        public void WindowsDirectoryCopyToWindowsDirectory()
+        public void AwsS3DirectoryCopyToAwsS3Directory()
         {
-            ZephyrDirectory source = Global.StageTestFilesToWindows();
+            ZephyrDirectory source = Global.StageTestFilesToAws();
             Console.WriteLine($"Source : {source.FullName}");
 
-            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomDirectory}\\");
+            String path = $"{Global.AwsS3WorkingPath}{Global.RandomDirectory}/";
             Console.WriteLine($"Target : {path}");
-            ZephyrDirectory target = Global.WindowsWorkingDirectory.CreateDirectory(path);
+            ZephyrDirectory target = Global.AwsS3WorkingDirectory.CreateDirectory(path);
             target.Create();
 
             source.CopyTo(target);
@@ -152,14 +151,14 @@ namespace Zephyr.Filesystem.Tests
 
 
         [Test]
-        public void WindowsDirectoryMoveToWindowsDirectory()
+        public void AwsS3DirectoryMoveToWindowsDirectory()
         {
-            ZephyrDirectory source = Global.StageTestFilesToWindows();
+            ZephyrDirectory source = Global.StageTestFilesToAws();
             Console.WriteLine($"Source : {source.FullName}");
 
-            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomDirectory}\\");
+            String path = $"{Global.AwsS3WorkingPath}{Global.RandomDirectory}/";
             Console.WriteLine($"Target : {path}");
-            ZephyrDirectory target = Global.WindowsWorkingDirectory.CreateDirectory(path);
+            ZephyrDirectory target = Global.AwsS3WorkingDirectory.CreateDirectory(path);
             target.Create();
 
             String sourceCount = Global.DirectoryObjectCounts(source);
@@ -178,34 +177,31 @@ namespace Zephyr.Filesystem.Tests
         }
 
         [Test]
-        public void WindowsDirectoryIsEmpty()
+        public void AwsS3DirectoryIsEmpty()
         {
-            String path = Path.Combine(Global.WindowsWorkingPath, $"{Global.RandomDirectory}\\");
+            String path = $"{Global.AwsS3WorkingPath}{Global.RandomDirectory}/";
             Console.WriteLine($"{path}");
-            ZephyrDirectory dir = Global.WindowsWorkingDirectory.CreateDirectory(path);
+            ZephyrDirectory dir = Global.AwsS3WorkingDirectory.CreateDirectory(path);
             dir.Create();
-            Assert.That(dir.IsEmpty);
+            Assert.IsTrue(dir.IsEmpty);
 
             Global.TestFilesDirectory.CopyTo(dir, verbose: false);
-            Assert.That(!dir.IsEmpty);
+            Assert.IsFalse(dir.IsEmpty);
 
             dir.Delete();
         }
-
 
         [Test]
-        public void WindowsDirectoryPurge()
+        public void AwsS3DirectoryPurge()
         {
-            ZephyrDirectory dir = Global.StageTestFilesToWindows();
-            Assert.That(!dir.IsEmpty);
+            ZephyrDirectory dir = Global.StageTestFilesToAws();
+            Assert.IsFalse(dir.IsEmpty);
 
             dir.Purge();
-            Assert.That(dir.Exists);
-            Assert.That(dir.IsEmpty);
+            Assert.IsTrue(dir.Exists);
+            Assert.IsTrue(dir.IsEmpty);
 
             dir.Delete();
         }
-
-
     }
 }

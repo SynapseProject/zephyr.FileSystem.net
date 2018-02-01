@@ -4,6 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Amazon;
+using Amazon.S3;
+using Amazon.Runtime;
+using Amazon.Runtime.CredentialManagement;
+
 using Alphaleonis.Win32.Filesystem;
 
 namespace Zephyr.Filesystem
@@ -210,5 +215,29 @@ namespace Zephyr.Filesystem
                 return file.Exists;
             }
         }
+
+        public static AwsClient InitAwsClient(RegionEndpoint region = null, string accessKey = null, string secretKey = null )
+        {
+            AwsClient client = null;
+
+            bool hasAccessKey = (!String.IsNullOrWhiteSpace(accessKey));
+            bool hasSecretKey = (!String.IsNullOrWhiteSpace(secretKey));
+            bool hasRegion = ( region != null );
+
+            if (hasAccessKey && hasSecretKey)
+            {
+                if (hasRegion)
+                    client = new AwsClient(accessKey, secretKey, region);
+                else
+                    client = new AwsClient(accessKey, secretKey);
+            }
+            else if (hasRegion)
+                client = new AwsClient(region);
+            else
+                client = new AwsClient();     // Pull All Details From Environemnt Variables / Credentails Files
+
+            return client;
+        }
+
     }
 }
