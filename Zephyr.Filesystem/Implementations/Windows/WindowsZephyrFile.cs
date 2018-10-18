@@ -92,6 +92,21 @@ namespace Zephyr.Filesystem
         }
 
         /// <summary>
+        /// Implementation of the ZephyrFile Flush method in Windows.
+        /// </summary>
+        /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
+        /// <param name="callback">Optional method that is called for logging purposes.</param>
+        public override void Flush(bool verbose = true, String callbackLabel = null, Action<string, string> callback = null)
+        {
+            if (IsOpen)
+            {
+                this.Stream.Flush();
+                if (verbose)
+                    Logger.Log($"File Stream [{FullName}] Has Been Flushed.", callbackLabel, callback);
+            }
+        }
+
+        /// <summary>
         /// Implementation of the ZephyrFile Create method in Windows.
         /// </summary>
         /// <param name="overwrite">Will overwrite the file if it already exists.</param>
