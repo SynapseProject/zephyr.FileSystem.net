@@ -69,13 +69,10 @@ namespace Zephyr.Filesystem
                 if (_client == null)
                     throw new Exception($"AWSClient Not Set.");
 
-                String key = ObjectKey;
-                key = key.Replace('/', '\\');
-
                 GetObjectMetadataRequest request = new GetObjectMetadataRequest()
                 {
                     BucketName = this.BucketName,
-                    Key = key
+                    Key = this.ObjectKey
                 };
 
                 try
@@ -107,6 +104,18 @@ namespace Zephyr.Filesystem
         {
             _client = client;
             FullName = fullName;
+        }
+
+        /// <summary>
+        /// Creates an AmazonS3ZephyrFile representing the bucketName and objectKey passed in.
+        /// </summary>
+        /// <param name="client">The client class used to connect to Amazon.</param>
+        /// <param name="bucketName">The Amazon S3 bucket name.</param>
+        /// <param name="key">The Amazon S3 object key.</param>
+        public AwsS3ZephyrFile(AwsClient client, string bucketName, string key)
+        {
+            _client = client;
+            FullName = $"s3://{bucketName}/{key}";
         }
 
         /// <summary>

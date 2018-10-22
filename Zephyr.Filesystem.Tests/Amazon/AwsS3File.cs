@@ -33,14 +33,11 @@ namespace Zephyr.Filesystem.Tests
             Console.WriteLine($"Exists   : {file.Exists}");
             Assert.That(file.Exists);
 
-            Console.WriteLine($"Stream   : {(file.Stream.CanWrite ? "Writable" : "Not Writable")}");
-            Assert.That(file.Stream.CanWrite);
-
             Console.WriteLine($"IsOpen   : {file.IsOpen}");
             Assert.That(file.IsOpen);
 
             Console.WriteLine($"CanRead  : {file.CanRead}");
-            Assert.That(!file.CanRead);
+            Assert.That(file.CanRead);
 
             Console.WriteLine($"CanWrite : {file.CanWrite}");
             Assert.That(file.CanWrite);
@@ -254,10 +251,10 @@ namespace Zephyr.Filesystem.Tests
 
             System.IO.Stream stream = file.Open(AccessType.Read);
             Assert.IsTrue(stream.CanRead);
-            Assert.IsFalse(stream.CanWrite);
+            Assert.IsTrue(stream.CanWrite);
 
             stream = file.Reopen(AccessType.Write);
-            Assert.IsFalse(stream.CanRead);
+            Assert.IsTrue(stream.CanRead);
             Assert.IsTrue(stream.CanWrite);
 
             file.Close();

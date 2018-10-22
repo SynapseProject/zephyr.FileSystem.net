@@ -5,8 +5,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-using Amazon.S3.IO;
+using Amazon.S3;
 using Amazon.S3.Model;
+using Amazon.S3.Util;
 
 namespace Zephyr.Filesystem
 {
@@ -99,12 +100,33 @@ namespace Zephyr.Filesystem
         {
             get
             {
+                bool exists = false;
                 if (_client == null)
                     throw new Exception($"AWSClient Not Set.");
 
-                string dirInfoKey = ObjectKey.Replace('/', '\\');
-                S3DirectoryInfo dirInfo = new S3DirectoryInfo(_client.Client, BucketName, dirInfoKey);
-                return dirInfo.Exists;
+                GetObjectMetadataRequest request = new GetObjectMetadataRequest()
+                {
+                    BucketName = this.BucketName,
+                    Key = this.ObjectKey
+                };
+
+                try
+                {
+                    if (!String.IsNullOrWhiteSpace(this.ObjectKey))
+                    {
+                        GetObjectMetadataResponse response = _client.Client.GetObjectMetadata(request);
+                        exists = true;
+                    }
+                    else if (!String.IsNullOrEmpty(this.BucketName))
+                        exists = AmazonS3Util.DoesS3BucketExist(_client.Client, this.BucketName);
+
+                }
+                catch (AmazonS3Exception e)
+                {
+                    if (!(e.StatusCode == System.Net.HttpStatusCode.NotFound || ("NoSuchKey".Equals(e.ErrorCode, StringComparison.OrdinalIgnoreCase))))
+                        throw;
+                }
+                return exists;
             }
         }
 
@@ -127,6 +149,18 @@ namespace Zephyr.Filesystem
         }
 
         /// <summary>
+        /// Creates an AmazonS3ZephyrDirectory representing the bucketName and objectKey passed in.
+        /// </summary>
+        /// <param name="client">The client class used to connect to Amazon.</param>
+        /// <param name="bucketName">The Amazon S3 bucket name.</param>
+        /// <param name="key">The Amazon S3 object key.</param>
+        public AwsS3ZephyrDirectory(AwsClient client, string bucketName, string key)
+        {
+            _client = client;
+            FullName = $"s3://{bucketName}/{key}";
+        }
+
+        /// <summary>
         /// Implementation of the ZephyrDirectory Create method in Amazon S3 Storage.
         /// </summary>
         /// <param name="failIfExists">Throws an error if the directory already exists.</param>
@@ -141,11 +175,16 @@ namespace Zephyr.Filesystem
             if (this.Exists && failIfExists)
                 throw new Exception($"Directory [{FullName}] Already Exists.");
 
-            String key = ObjectKey;
-            if (key.EndsWith("/"))
-                key = key.Substring(0, key.Length - 1);
-            S3DirectoryInfo dirInfo = new S3DirectoryInfo(_client.Client, BucketName, key);
-            dirInfo.Create();
+            PutObjectRequest request = new PutObjectRequest
+            {
+                BucketName = BucketName,
+                Key = ObjectKey,
+                ServerSideEncryptionMethod = _client.SSEMethod,
+                StorageClass = _client.StorageClass
+            };
+
+            PutObjectResponse response = _client.Client.PutObject(request);
+
             if (verbose)
                 Logger.Log($"Directory [{FullName}] Was Created.", callbackLabel, callback);
             return this;
@@ -190,23 +229,18 @@ namespace Zephyr.Filesystem
                 if (_client == null)
                     throw new Exception($"AWSClient Not Set.");
 
-                String key = ObjectKey;
-                key = key.Replace('/', '\\');
-                if (key.EndsWith("\\"))
-                    key = key.Substring(0, key.Length - 1);
-                S3DirectoryInfo dirInfo = new S3DirectoryInfo(_client.Client, BucketName, key);
-
-                if (dirInfo.Exists)
+                List<S3Object> objects = ListObjects(this.BucketName, this.ObjectKey);
+                if (objects.Count > 0)
                 {
-                    if (!recurse)
+                    if (recurse)
+                        foreach (S3Object obj in objects)
+                            DeleteObject(obj);
+                    else
                     {
-                        int dirs = dirInfo.GetDirectories().Length;
-                        int files = dirInfo.GetFiles().Length;
-                        if (dirs > 0 || files > 0)
+                        if (objects.Count > 1)
                             throw new Exception($"Directory [{FullName}] is not empty.");
+                        DeleteObject(objects[0]);
                     }
-
-                    dirInfo.Delete(recurse);
                 }
 
                 if (verbose)
@@ -230,11 +264,17 @@ namespace Zephyr.Filesystem
                 throw new Exception($"AWSClient Not Set.");
 
             List<ZephyrDirectory> dirs = new List<ZephyrDirectory>();
-            S3DirectoryInfo dInfo = new S3DirectoryInfo(this._client.Client, this.BucketName, ObjectKey.Replace('/', '\\'));
-            S3DirectoryInfo[] children = dInfo.GetDirectories();
 
-            foreach (S3DirectoryInfo child in children)
-                dirs.Add(new AwsS3ZephyrDirectory(_client, PathCombine(this.FullName, $"{child.Name}/")));
+            List<S3Object> objects = ListObjects(this.BucketName, this.ObjectKey);
+            foreach (S3Object obj in objects)
+            {
+                String key = obj.Key;
+                String compKey = key;
+                if (!String.IsNullOrWhiteSpace(this.ObjectKey))
+                    compKey = key.Replace(this.ObjectKey, "");
+                if ((compKey.IndexOf("/") == (compKey.Length - 1)) && (compKey.Length > 0))
+                    dirs.Add(new AwsS3ZephyrDirectory(_client, obj.BucketName, obj.Key));
+            }
 
             return dirs;
         }
@@ -249,11 +289,15 @@ namespace Zephyr.Filesystem
                 throw new Exception($"AWSClient Not Set.");
 
             List<ZephyrFile> files = new List<ZephyrFile>();
-            S3DirectoryInfo dInfo = new S3DirectoryInfo(this._client.Client, this.BucketName, ObjectKey.Replace('/', '\\'));
-            S3FileInfo[] children = dInfo.GetFiles();
 
-            foreach (S3FileInfo child in children)
-                files.Add(new AwsS3ZephyrFile(_client, PathCombine(this.FullName, child.Name)));
+            List<S3Object> objects = ListObjects(this.BucketName, this.ObjectKey);
+            foreach (S3Object obj in objects)
+            {
+                String key = obj.Key;
+                String compKey = key.Replace(this.ObjectKey, "");
+                if (!compKey.Contains("/") && compKey.Length > 0)
+                    files.Add(new AwsS3ZephyrFile(_client, obj.BucketName, obj.Key));
+            }
 
             return files;
         }
@@ -280,6 +324,29 @@ namespace Zephyr.Filesystem
             }
 
             return sb.ToString();
+        }
+
+        private List<S3Object> ListObjects(string bucketName, string prefix)
+        {
+            ListObjectsV2Request request = new ListObjectsV2Request()
+            {
+                BucketName = bucketName,
+                Prefix = prefix
+            };
+
+            ListObjectsV2Response response = _client.Client.ListObjectsV2(request);
+            return response.S3Objects;
+        }
+
+        private void DeleteObject(S3Object obj)
+        {
+            DeleteObjectRequest request = new DeleteObjectRequest()
+            {
+                BucketName = obj.BucketName,
+                Key = obj.Key
+            };
+
+            DeleteObjectResponse response = _client.Client.DeleteObject(request);
         }
     }
 }
