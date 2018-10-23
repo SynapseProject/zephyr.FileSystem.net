@@ -16,6 +16,9 @@ namespace Zephyr.Filesystem
     /// </summary>
     public class AwsClient
     {
+        public ServerSideEncryptionMethod SSEMethod = ServerSideEncryptionMethod.None;
+        public S3StorageClass StorageClass = S3StorageClass.Standard;
+
         /// <summary>
         /// The AmazonS3Client used to connect to Amazon S3 Storage
         /// </summary>

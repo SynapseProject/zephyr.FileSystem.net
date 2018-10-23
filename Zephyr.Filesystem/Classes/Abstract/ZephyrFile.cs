@@ -115,6 +115,13 @@ namespace Zephyr.Filesystem
         public abstract void Close(bool verbose = true, String callbackLabel = null, Action<string, string> callback = null);
 
         /// <summary>
+        /// Flushes the underlying Steam associated with the ZephyrFile implementation.
+        /// </summary>
+        /// <param name="callbackLabel">Optional "label" to be passed into the callback method.</param>
+        /// <param name="callback">Optional method that is called for logging purposes.</param>
+        public abstract void Flush(bool verbose = true, String callbackLabel = null, Action<string, string> callback = null);
+
+        /// <summary>
         /// Method to copy the contents of the ZephyrFile into another ZephyrFile.  
         /// It works by using the base "Stream" property and "Create"methods each implementation must create.
         /// Thus, the ZephyrFiles do not have to be of the same implementation type.
@@ -349,7 +356,7 @@ namespace Zephyr.Filesystem
                 writer.WriteLine(line);
 
             writer.Flush();
-            writer.Close();
+            Flush(verbose, callbackLabel, callback);
             Close(verbose, callbackLabel, callback);
         }
 
@@ -366,7 +373,7 @@ namespace Zephyr.Filesystem
             StreamWriter writer = new StreamWriter(this.Stream);
             writer.Write(text);
             writer.Flush();
-            writer.Close();
+            Flush(verbose, callbackLabel, callback);
             Close(verbose, callbackLabel, callback);
         }
 
@@ -380,7 +387,7 @@ namespace Zephyr.Filesystem
         {
             Reopen(AccessType.Write, verbose, callbackLabel, callback);
             this.Stream.Write(bytes, 0, bytes.Length);
-            this.Stream.Flush();
+            Flush(verbose, callbackLabel, callback);
             Close(verbose, callbackLabel, callback);
         }
     }
